@@ -30,6 +30,7 @@
               jq
               awscli2
               direnv
+              gh
               nixfmt
               nil
             ];
