@@ -52,6 +52,7 @@ ADRでは最低限、次のStatusを使用する。
 ## Current ADRs
 
 - [ADR-0001: Use Architecture Decision Records](0001-use-architecture-decision-records.md)
+- [ADR-0002: Use TypeScript and pnpm Workspace Monorepo](0002-use-typescript-pnpm-workspace-monorepo.md)
 
 ## Template
 

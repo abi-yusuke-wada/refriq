@@ -240,6 +240,22 @@ direnvを使用しない場合は、手動でも開発Shellへ入れます。
 nix develop
 ```
 
+### Install dependencies
+
+開発Shell内で、lockfileに従って依存関係をインストールします。
+
+```bash
+pnpm install --frozen-lockfile
+```
+
+### Typecheck
+
+すべてのTypeScript Workspaceを検証します。
+
+```bash
+pnpm typecheck
+```
+
 ### Verify
 
 開発Shell内で以下を確認できます。

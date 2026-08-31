@@ -1,0 +1,11 @@
+{
+  "name": "refriq",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "pnpm --recursive run typecheck"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}

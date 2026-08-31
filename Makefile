@@ -17,6 +17,10 @@ direnv-allow:
 check:
 	nix flake check
 
+.PHONY: typecheck
+typecheck:
+	pnpm typecheck
+
 .PHONY: versions
 versions:
 	nix develop --command bash -c '\
