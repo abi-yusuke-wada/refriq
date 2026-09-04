@@ -42,12 +42,26 @@ ADRでは最低限、次のStatusを使用する。
 
 ## ADRの作成・更新ルール
 
-1. 重要なArchitecture Decisionを行う前に、`docs/adr/`配下の既存ADRを確認する。
-2. 既存ADRと矛盾する判断を採用する場合は、理由を明記し、新しいADRでSupersedeする。
-3. 新しいADRには、連番の4桁IDと短いkebab-caseのタイトルを付ける。例: `0002-replace-worker-with-queue.md`
-4. `Proposed`のADRは、採用・却下・置換の判断ができた時点でStatusを更新する。
-5. ADRの本文は、Decisionだけでなく、採用しなかったAlternativesと受け入れたConsequencesも記録する。
-6. Scope文書やIssueの変更だけではArchitecture Decisionの意図が追跡できない場合、関連ADRへのリンクを追加する。
+### New Decision
+
+1. `docs/adr/`配下のExisting ADRを確認する。
+2. Primary Language、Framework、Runtime、Database、Cloud Service、Persistence、Domain Boundary、LLM / AI Pipeline、Source Governance、Security、将来のMigration Costなどに関わる重要な判断か確認する。
+3. 次の連番を使用し、4桁IDと短いkebab-caseのタイトルを付ける。例: `0004-replace-worker-with-queue.md`
+4. [`template.md`](template.md) を使って `Proposed` として作成する。
+5. Review後、採用する場合は `Accepted`、採用しない場合は `Rejected` に更新する。
+
+### Decision Change
+
+1. Existing ADRを直接削除・書き換えしない。
+2. 変更後のDecisionについてNew ADRを作成する。
+3. Old ADRのStatusを `Superseded` にし、`Superseded by ADR-XXXX` とNew ADRへのReferenceを残す。
+4. New ADRからもSupersedeしたOld ADRをReferenceし、Decisionの履歴を相互に追跡できるようにする。
+
+### Writing Rules
+
+- Context、Decision、Reasons、Alternatives、Consequences、Revisit Whenを記録する。
+- `Proposed`のADRは、採用・却下・置換の判断ができた時点でStatusを更新する。
+- Scope文書やIssueの変更だけではDecisionの意図を追跡できない場合、関連ADRへのリンクを追加する。
 
 ## Current ADRs
 
@@ -57,33 +71,4 @@ ADRでは最低限、次のStatusを使用する。
 
 ## Template
 
-```markdown
-# ADR-XXXX: Title
-
-- Status: Proposed
-- Date: YYYY-MM-DD
-
-## Context
-
-この判断が必要になった背景・制約。
-
-## Decision
-
-採用する判断。
-
-## Reasons
-
-採用理由。
-
-## Alternatives
-
-検討した他の選択肢。
-
-## Consequences
-
-得られるメリットと受け入れるデメリット。
-
-## Revisit When
-
-どの条件になったら再検討するか。
-```
+新しいADRは [`template.md`](template.md) をコピーして作成する。Templateには、判断の背景、採用理由、Alternatives、Consequences、再検討条件を記録する欄を用意している。
