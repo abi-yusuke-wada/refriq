@@ -15,6 +15,8 @@
       ];
     in
     {
+      formatter = nixpkgs.lib.genAttrs systems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
+
       devShells = nixpkgs.lib.genAttrs systems (
         system:
         let

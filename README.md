@@ -258,6 +258,17 @@ pnpm typecheck
 
 ### Verify
 
+Human、Codex、将来のCIで共通のValidation入口を利用するため、Repositoryの検証にはMakefileのCommandを使用します。
+
+```bash
+make help
+make fmt
+make fmt-check
+make check
+```
+
+`make check`はFormatter、Lint、TypeScript Typecheck、Test、Nix Flakeを変更なしで検証します。利用可能なCommandの一覧は`make help`を正とします。
+
 開発Shell内で以下を確認できます。
 
 ```bash

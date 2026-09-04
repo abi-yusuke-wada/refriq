@@ -3,9 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "test": "vitest run --passWithNoTests",
     "typecheck": "pnpm --recursive run typecheck"
   },
   "devDependencies": {
-    "typescript": "7.0.2"
+    "@biomejs/biome": "2.5.11",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
   }
 }

@@ -53,6 +53,7 @@ ADRでは最低限、次のStatusを使用する。
 
 - [ADR-0001: Use Architecture Decision Records](0001-use-architecture-decision-records.md)
 - [ADR-0002: Use TypeScript and pnpm Workspace Monorepo](0002-use-typescript-pnpm-workspace-monorepo.md)
+- [ADR-0003: Use Biome and Vitest for JavaScript Validation](0003-use-biome-and-vitest-for-javascript-validation.md)
 
 ## Template
 
