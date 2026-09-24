@@ -16,19 +16,21 @@ jobs:
     steps:
       - name: Check AI Review secrets
         env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           LLM_API_BASE_URL: ${{ secrets.LLM_API_BASE_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
         shell: bash
         run: |
-          if [[ -z "$LLM_API_BASE_URL" || -z "$LLM_API_KEY" ]]; then
-            echo "::error::Configure the LLM_API_BASE_URL and LLM_API_KEY repository secrets."
+          if [[ -z "$GH_TOKEN" || -z "$LLM_API_BASE_URL" || -z "$LLM_API_KEY" ]]; then
+            echo "::error::Configure the GH_TOKEN, LLM_API_BASE_URL, and LLM_API_KEY repository secrets."
             exit 1
           fi
 
       - name: Review pull request
         uses: abi-techinnovation/github-review-app@8a21edca00d6a9c3c5830b1de93a097911c9a727 # v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_number: ${{ github.event.pull_request.number }}
+          github_token: ${{ secrets.GH_TOKEN }}
           llm_api_base_url: ${{ secrets.LLM_API_BASE_URL }}
           llm_api_key: ${{ secrets.LLM_API_KEY }}
           review_model: ${{ vars.REVIEW_MODEL || 'preview/Kimi-K2.7-Code' }}

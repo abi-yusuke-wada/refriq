@@ -29,6 +29,8 @@ Issue・AGENTS.md・ADRを確認
 
 CIとAI Reviewは独立して実行する。CIは`.github/workflows/ci.yml`で`make check`を行い、AI Reviewは[GitHub Review App](https://github.com/abi-techinnovation/github-review-app)でPull Requestの差分を確認する。Pull Request作成時と更新時にAI Reviewが自動実行される。
 
+WorkflowはイベントのPull Request番号を`pr_number`入力でActionへ渡す。`GITHUB_REPOSITORY`はGitHub Actionsから取得する。Review App用のGitHub TokenはRepository Secret `GH_TOKEN`からActionの`github_token`入力へ渡す。GitHub Actions組み込みの`GITHUB_TOKEN`用Secretを別途作成する必要はない。
+
 ## AI Review指摘の扱い
 
 AI ReviewはPull Request全体へのコメントを投稿する。差分入力の既定上限は12,000文字なので、大きなPull Requestは実際の全差分も照合する。各指摘について、Codexは次を確認する。
@@ -49,9 +51,10 @@ GitHub Repositoryの **Settings → Secrets and variables → Actions → Secret
 
 | Secret | 用途 |
 | --- | --- |
+| `GH_TOKEN` | 対象RepositoryのPull Requestを読み取り、Reviewを投稿できるToken |
 | `LLM_API_BASE_URL` | 許可されたOpenAI互換APIのBase URL |
 | `LLM_API_KEY` | 同APIの認証Key |
 
 必要に応じてRepository Variable `REVIEW_MODEL` に、接続先APIで利用できるモデルIDを設定する。未設定時は `preview/Kimi-K2.7-Code` を使う。別のAPIを使う場合は、そのAPIが公開するモデルIDを指定する。
 
-`GITHUB_TOKEN`はGitHub Actionsが提供し、WorkflowにはPR情報取得・Review投稿用の`pull-requests: write`だけを許可する。Review AppはPull Requestの差分を設定されたLLM APIへ送信するため、Secretsを設定する前に接続先とコード共有条件を確認する。未設定の場合、AI Review Workflowは明示的なエラーで失敗する。
+Workflowの`pull-requests: write`はGitHub Actions組み込みTokenの権限を限定する。Review Appには`GH_TOKEN`を渡すため、このSecretにも対象RepositoryのPull Request読み取りとReview投稿に必要な権限を付与する。Review AppはPull Requestの差分を設定されたLLM APIへ送信するため、Secretsを設定する前に接続先とコード共有条件を確認する。未設定の場合、AI Review Workflowは明示的なエラーで失敗する。
