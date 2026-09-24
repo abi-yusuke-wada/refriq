@@ -1,0 +1,35 @@
+{
+  "decision": "REJECT",
+  "checks": {
+    "CERTIFICATION_SCOPE": "PASS",
+    "KNOWLEDGE_POINT_ALIGNMENT": "PASS",
+    "ANSWER_GROUNDED": "CONCERN",
+    "DISTRACTORS_INCORRECT": "PASS",
+    "ANSWER_CARDINALITY": "PASS",
+    "NO_UNSUPPORTED_CLAIMS": "FAIL",
+    "NO_AMBIGUITY": "PASS",
+    "QUESTION_TYPE_APPROPRIATE": "PASS",
+    "STEM_SELF_CONTAINED": "PASS"
+  },
+  "findings": [
+    {
+      "code": "ANSWER_GROUNDED",
+      "severity": "warning",
+      "message": "The selected answer needs an additional supporting statement.",
+      "sourceReferences": [
+        {
+          "sourceRevisionId": "source-revision-routing-01",
+          "locator": "section:route-service-link"
+        }
+      ]
+    },
+    {
+      "code": "NO_UNSUPPORTED_CLAIMS",
+      "severity": "error",
+      "message": "The answer rationale contains a statement not supported by the provided synthetic Source.",
+      "sourceReferences": []
+    }
+  ],
+  "ambiguityNotes": [],
+  "assumptions": ["The unsupported statement was introduced during generation."]
+}

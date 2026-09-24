@@ -1,0 +1,15 @@
+{
+  "knowledgePoints": [
+    {
+      "title": "Route matching selects a service",
+      "summary": "An Example Gateway Route matches incoming request attributes and directs a matching request to its associated Service.",
+      "examTopicId": "topic-routing",
+      "sourceReferences": [
+        {
+          "sourceRevisionId": "source-revision-routing-01",
+          "locator": "section:route-service-link"
+        }
+      ]
+    }
+  ]
+}

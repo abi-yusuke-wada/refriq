@@ -1,0 +1,29 @@
+{
+  "decision": "REVISE",
+  "checks": {
+    "CERTIFICATION_SCOPE": "PASS",
+    "KNOWLEDGE_POINT_ALIGNMENT": "PASS",
+    "ANSWER_GROUNDED": "PASS",
+    "DISTRACTORS_INCORRECT": "PASS",
+    "ANSWER_CARDINALITY": "PASS",
+    "NO_UNSUPPORTED_CLAIMS": "PASS",
+    "NO_AMBIGUITY": "PASS",
+    "QUESTION_TYPE_APPROPRIATE": "PASS",
+    "STEM_SELF_CONTAINED": "CONCERN"
+  },
+  "findings": [
+    {
+      "code": "STEM_SELF_CONTAINED",
+      "severity": "warning",
+      "message": "The scenario could identify the request path more clearly.",
+      "sourceReferences": [
+        {
+          "sourceRevisionId": "source-revision-routing-01",
+          "locator": "section:route-service-link"
+        }
+      ]
+    }
+  ],
+  "ambiguityNotes": ["The request path is not specified in the scenario."],
+  "assumptions": []
+}

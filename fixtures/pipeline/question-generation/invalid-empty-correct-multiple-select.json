@@ -1,0 +1,22 @@
+{
+  "question": {
+    "type": "multiple_select",
+    "stem": "Which resources can receive a matching request?",
+    "options": [
+      { "id": "A", "text": "The associated Service" },
+      { "id": "B", "text": "A separate Certification record" }
+    ],
+    "correctOptionIds": [],
+    "explanation": "This fixture violates the multiple-select answer count invariant.",
+    "optionExplanations": {
+      "A": "A synthetic explanation.",
+      "B": "A synthetic explanation."
+    },
+    "sourceReferences": [
+      {
+        "sourceRevisionId": "source-revision-routing-01",
+        "locator": "section:route-service-link"
+      }
+    ]
+  }
+}

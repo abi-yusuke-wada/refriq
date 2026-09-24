@@ -1,0 +1,17 @@
+{
+  "question": {
+    "type": "single_choice",
+    "stem": "A synthetic question without grounding.",
+    "options": [
+      { "id": "A", "text": "Synthetic option one" },
+      { "id": "B", "text": "Synthetic option two" }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "A synthetic explanation.",
+    "optionExplanations": {
+      "A": "A synthetic explanation.",
+      "B": "A synthetic explanation."
+    },
+    "sourceReferences": []
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "questionIntent": {
+    "knowledgePointCandidateIds": ["synthetic-pipeline-run:knowledge:1"],
+    "questionType": "single_choice",
+    "format": "scenario",
+    "learningObjective": "Apply the relationship between a Route and its associated Service.",
+    "difficulty": "intermediate",
+    "targetConcept": "A matching Route directs a request to its associated Service.",
+    "constraints": [
+      "Use only the provided Source grounding.",
+      "There must be exactly one correct option."
+    ],
+    "sourceReferences": [
+      {
+        "sourceRevisionId": "source-revision-routing-01",
+        "locator": "section:route-service-link"
+      }
+    ]
+  }
+}

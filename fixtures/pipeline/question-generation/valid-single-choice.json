@@ -1,0 +1,26 @@
+{
+  "question": {
+    "type": "single_choice",
+    "stem": "A team configures a Route that matches requests for /inventory. Which resource receives a matching request?",
+    "options": [
+      { "id": "A", "text": "The Service associated with the Route" },
+      { "id": "B", "text": "A separate Certification record" },
+      { "id": "C", "text": "The route's descriptive label as a response body" },
+      { "id": "D", "text": "Every Service in the Gateway" }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "The fictional reference describes a Route as matching requests and directing them to its associated Service.",
+    "optionExplanations": {
+      "A": "Correct. This is the documented relationship in the synthetic Source.",
+      "B": "A Certification describes a learning scope and does not receive requests.",
+      "C": "The locator or label does not become the response body.",
+      "D": "The reference describes the associated Service, not every Service."
+    },
+    "sourceReferences": [
+      {
+        "sourceRevisionId": "source-revision-routing-01",
+        "locator": "section:route-service-link"
+      }
+    ]
+  }
+}

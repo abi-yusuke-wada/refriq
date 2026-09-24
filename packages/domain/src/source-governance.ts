@@ -78,19 +78,47 @@ export const SOURCE_POLICY_REASON_CODES = [
 export type SourcePolicyReasonCode =
   (typeof SOURCE_POLICY_REASON_CODES)[number];
 
-export type SourceAccessClassification = "PUBLIC" | "AUTHENTICATED" | "UNKNOWN";
+export const SOURCE_ACCESS_CLASSIFICATIONS = [
+  "PUBLIC",
+  "AUTHENTICATED",
+  "UNKNOWN",
+] as const;
 
-export type AutomatedAccessStatus = "ALLOWED" | "DISALLOWED" | "UNKNOWN";
+export type SourceAccessClassification =
+  (typeof SOURCE_ACCESS_CLASSIFICATIONS)[number];
 
-export type SourceOriginStatus = "VERIFIED" | "UNVERIFIED" | "UNKNOWN";
+export const AUTOMATED_ACCESS_STATUSES = [
+  "ALLOWED",
+  "DISALLOWED",
+  "UNKNOWN",
+] as const;
 
-export type PurposeAlignment = "ALIGNED" | "NOT_ALIGNED" | "UNKNOWN";
+export type AutomatedAccessStatus = (typeof AUTOMATED_ACCESS_STATUSES)[number];
 
-export type TermsReviewStatus =
-  | "CLEARED_FOR_PRODUCT_USE"
-  | "REQUIRES_REVIEW"
-  | "PROHIBITED"
-  | "UNKNOWN";
+export const SOURCE_ORIGIN_STATUSES = [
+  "VERIFIED",
+  "UNVERIFIED",
+  "UNKNOWN",
+] as const;
+
+export type SourceOriginStatus = (typeof SOURCE_ORIGIN_STATUSES)[number];
+
+export const PURPOSE_ALIGNMENTS = [
+  "ALIGNED",
+  "NOT_ALIGNED",
+  "UNKNOWN",
+] as const;
+
+export type PurposeAlignment = (typeof PURPOSE_ALIGNMENTS)[number];
+
+export const TERMS_REVIEW_STATUSES = [
+  "CLEARED_FOR_PRODUCT_USE",
+  "REQUIRES_REVIEW",
+  "PROHIBITED",
+  "UNKNOWN",
+] as const;
+
+export type TermsReviewStatus = (typeof TERMS_REVIEW_STATUSES)[number];
 
 export interface SourceTermsMetadata {
   readonly reviewStatus: TermsReviewStatus;
