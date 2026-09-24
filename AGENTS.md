@@ -25,6 +25,11 @@ Issueの背景、目的、対象範囲、対象外、受入条件、依存Issue�
 
 Architectureの原則は「Scalableに作るのではなく、Replaceableに作る」である。ただし、すべてを抽象化せず、交換可能性が高い外部境界だけを必要な範囲で抽象化する。
 
+## ドキュメント
+
+- RepositoryのDocumentationは原則として日本語で記載する。DocumentのTitle、見出し、表、図の表示文言も日本語にする。
+- Domain用語、Code上のIdentifier、固定Status名など、正確さのために必要な英語表記は使用してよい。
+
 ## Dependency Boundary
 
 ### Domain
