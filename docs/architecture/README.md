@@ -13,6 +13,7 @@ Architecture DocumentとADRの責務は分ける。
 | --- | --- |
 | [`README.md`](../../README.md) | Project概要と開発開始方法 |
 | [`docs/mvp-scope.md`](../mvp-scope.md) | MVPで何を作るか、対象外、完了条件 |
+| [`docs/domain/`](../domain/) | 各Domain Conceptの意味、Identity、Lifecycle、不変条件 |
 | `docs/architecture/` | 現在のArchitecture |
 | [`docs/adr/`](../adr/) | Architecture Decisionを行った理由、Alternatives、Consequences |
 | [`AGENTS.md`](../../AGENTS.md) | Codexを含む開発者が常に守るRepository Rule |
