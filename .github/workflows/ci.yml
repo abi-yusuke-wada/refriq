@@ -18,8 +18,10 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v31.10.6
 
+      # Cache failures are non-blocking; make check remains the quality gate.
       - name: Cache Nix store
         uses: nix-community/cache-nix-action@v7.0.2
+        continue-on-error: true
         with:
           primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.nix', 'flake.lock') }}
           restore-prefixes-first-match: |
@@ -29,11 +31,13 @@ jobs:
         id: pnpm-store
         run: echo "path=$(nix develop --command pnpm store path)" >> "$GITHUB_OUTPUT"
 
+      # Cache failures are non-blocking; dependency installation and make check still fail normally.
       - name: Cache pnpm store
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.0.0
+        continue-on-error: true
         with:
           path: ${{ steps.pnpm-store.outputs.path }}
-          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('flake.nix', 'flake.lock', 'pnpm-lock.yaml') }}
           restore-keys: |
             pnpm-${{ runner.os }}-
 
