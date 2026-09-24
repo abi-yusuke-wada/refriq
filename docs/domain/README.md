@@ -8,6 +8,7 @@
 
 - [Glossary](glossary.md): 各ConceptのDefinition、Responsibility、Identity、変更性、Lifecycle、Relationships
 - [Lifecycle and Invariants](lifecycle.md): Lifecycle図、State Transition、Invariant Catalog、Test Case Mapping、Open Questions
+- [Source Governance](source-governance.md): Source Classification、Allowlist、Ingestion / Publish Gate、禁止Content、Provenance Policy
 
 ## ドメイン上の関係
 
@@ -16,6 +17,9 @@ flowchart LR
   C[資格<br/>Certification] --> T[試験範囲Topic<br/>ExamTopic]
   T --> K[学習単位<br/>KnowledgePoint]
   SD[公式出典<br/>SourceDocument] --> SR[取得時点の内容<br/>SourceRevision]
+  SD --> PD[利用時点のPolicy判断<br/>SourcePolicyDecision]
+  SR -. 取得時の判定Snapshot .-> PD
+  HSR[SourceのHuman Review<br/>SourceReview] --> PD
   SR --> K
   K --> I[問題の出題意図<br/>QuestionIntent]
   I --> Q[問題系列のIdentity<br/>Question]
@@ -30,7 +34,7 @@ flowchart LR
   EF[試験体験のFeedback<br/>ExamFeedback] -. 改善のSignal・技術的根拠ではない .-> ID[改善判断]
 ```
 
-図はDomain上の参照関係を示す。`ExamFeedback` はKnowledgeやQuestionの正しさを裏付けるSourceではない。`QuestionSource` はQuestionRevisionから、その作成根拠となった特定のSourceRevisionへ到達させるAssociationである。
+図はDomain上の参照関係を示す。`ExamFeedback` はKnowledgeやQuestionの正しさを裏付けるSourceではない。`QuestionSource` はQuestionRevisionから、その作成根拠となった特定のSourceRevisionへ到達させるAssociationである。詳細なSource Policyは[Sourceガバナンス](source-governance.md)を正とする。
 
 ## AggregateとObjectの境界
 
@@ -42,6 +46,8 @@ Aggregateは、同時に守る必要があるDomain Invariantの境界として�
 | `ExamTopic` | Entity | `Certification`内の公式Scopeに基づくTopic Identity。単独Aggregateにはしない。 |
 | `SourceDocument` | Aggregate Root | Sourceのstable identityと現在のLocator等を管理する。 |
 | `SourceRevision` | Immutable Entity / Snapshot | 取得・解析対象Contentの不変Snapshot。親`SourceDocument`に属する。 |
+| `SourceReview` | Append-only Entity / Record | `SourceDocument`の利用用途を確認するHuman Decisionの証跡。 |
+| `SourcePolicyDecision` | Append-only Policy Record | SourceとUsage Purposeを評価した時点のClassification、Reason、Review参照。 |
 | `KnowledgePoint` | Aggregate Root | 学習可能な知識単位とそのTopic / Source Revisionへの関係を管理する。 |
 | `Question` | Aggregate Root | 問題系列のstable identity、Revision履歴、Review記録、現在公開中のRevision参照を管理する。 |
 | `QuestionIntent` | Value Object | 問題で測る知識・判断方法・形式などの意図を表す。独立Identityを持たない。 |
@@ -56,7 +62,7 @@ Aggregateは、同時に守る必要があるDomain Invariantの境界として�
 
 ## Value ObjectとIdentity
 
-`CertificationId`、`ExamTopicId`、`SourceDocumentId`、`SourceRevisionId`、`KnowledgePointId`、`QuestionId`、`QuestionRevisionId`、`QuestionReviewId`、`ExamFeedbackId`、`UserAnswerId`、`UserId`、`LearnerId`、`ReviewerId`は、対象Conceptを識別するOpaqueなDomain Identityである。UUID、ULID、文字列形式、採番方式、User認証方式は決めない。
+`CertificationId`、`ExamTopicId`、`SourceDocumentId`、`SourceRevisionId`、`SourceReviewId`、`SourcePolicyDecisionId`、`KnowledgePointId`、`QuestionId`、`QuestionRevisionId`、`QuestionReviewId`、`ExamFeedbackId`、`UserAnswerId`、`UserId`、`LearnerId`、`ReviewerId`は、対象Conceptを識別するOpaqueなDomain Identityである。UUID、ULID、文字列形式、採番方式、User認証方式は決めない。
 
 `Vendor`、`SourceUrl`、`ContentFingerprint`、`QuestionType`、`Difficulty`、`Language`、`ReviewDecision`、Lifecycle State、回答選択などは、その値自体に独立Identityを与えないValue Object候補である。すべてをTypeScript Classとして実装することは要求しない。
 
@@ -64,11 +70,11 @@ Aggregateは、同時に守る必要があるDomain Invariantの境界として�
 
 ## 後続Issueとの責務境界
 
-- Issue #7はSourceの採用・禁止Policy、利用条件確認、禁止Contentの検出・扱いを定義する。このModelは関係とNormative Sourceの意味だけを定義する。
+- Issue #7の[Sourceガバナンス](source-governance.md)はSourceの採用・禁止Policy、利用条件確認、禁止Contentの扱いとGateを定義する。このModelはDomain関係とNormative Sourceの意味を定義する。
 - Issue #8はKnowledge抽出、Question生成、LLM境界、Pipeline orchestrationを設計する。このModelはPipelineが扱うDomain ObjectとQuestionIntentまでを定義する。
 - Issue #9 / #10はLearner / ReviewerのScreen、操作、API、権限運用を設計する。このModelはAnswer、Review、Decisionの意味までを定義する。
 - Issue #12はDomain ObjectをDynamoDB / S3へどうMappingするかを設計する。Storage Key、Table、Object Key、Index、Transactionはここでは決めない。
 
 ## TypeScriptでの実装
 
-現在の`packages/domain`はSkeletonである。このIssueでは、Domain MeaningをDocumentationで定義する。型をAPIやPersistenceに合わせて先行作成せず、実装時にこの定義をDomain Ruleとして反映する。
+`packages/domain`は、Issue #7で定義したSource Policy GateのExecutable Ruleを含む。その他のConceptのCRUD、API、PersistenceへのMappingは定義しない。

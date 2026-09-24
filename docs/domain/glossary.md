@@ -38,11 +38,11 @@
 
 ### SourceDocument
 
-- **定義:** `Kong Gateway Routes documentation`のような、参照対象となる公式Sourceのstable identity。
-- **責務:** SourceそのもののIdentityと現在のCatalog Metadata / Locatorを表す。公式Sourceを技術的な正しさのNormative Sourceとする。
+- **定義:** 公式Documentation等の参照対象と、Review対象として登録されたSource候補のstable identity。
+- **責務:** SourceそのもののIdentityと現在のCatalog Metadata / Locatorを表す。Sourceの用途別ClassificationはSourcePolicyDecisionで管理する。公式公開Sourceを技術的な正しさのNormative Sourceとして優先する。
 - **識別:** Stableな`SourceDocumentId`。URLはLocatorでありIdentityではない。同じ著作物のURL変更やRedirectでは同じSourceDocumentを維持できる。別の著作物へ差し替わった場合は別Identityとする。
 - **変更性:** Current URL、表示名などのCatalog Metadataは変更可能。過去RevisionのMetadata Snapshotは変更しない。
-- **状態・Lifecycle:** 登録後、将来の取得対象からRetireできる。Retiredにしても既存Revision、QuestionSource、QuestionRevisionの参照を消さない。採用可否や利用条件によるActive化のPolicyはIssue #7で定義する。
+- **状態・Lifecycle:** 登録後、将来の取得対象からRetireできる。Retiredにしても既存Revision、QuestionSource、QuestionRevisionの参照を消さない。利用可否と用途はSourcePolicyDecisionに記録する。
 - **関連:** 1つのSourceDocumentが0個以上のSourceRevisionを所有する。QuestionRevisionはSourceDocumentではなく特定のSourceRevisionへ根拠を追跡する。
 - **主な不変条件:** `INV-SOURCE-001`、`INV-SOURCE-002`。
 
@@ -51,21 +51,40 @@
 - **定義:** SourceDocumentからある時点で取得し、解析対象にしたContentのimmutable Snapshot。
 - **責務:** KnowledgePoint / QuestionRevisionを作成した時点のSource Contentと取得時の文脈を再現可能にする。
 - **識別:** 親SourceDocumentの下でstableな`SourceRevisionId`。Revision順序は同一Document内で識別できればよく、連番形式やID生成方式は決めない。
-- **変更性:** **Immutable**。Content、`retrievedAt`、Content Fingerprint、Source Metadata Snapshot、取得時のSource URLを作成後に更新・上書きしない。
+- **変更性:** **Immutable**。Content、`retrievedAt`、Content Fingerprint、Source Metadata Snapshot、取得時のSource URL、取得時Classification、Terms Metadata Snapshot、Policy Decision参照を作成後に更新・上書きしない。
 - **状態・Lifecycle:** SourceDocumentの取得・解析時に作成され、以後は不変の履歴として保持する。Contentが変わった場合は新しいSourceRevisionを作る。同一Contentの再取得だけでContent Revisionを増やす必要はない。
 - **関連:** 必ず1つのSourceDocumentに属す。KnowledgePointとQuestionSourceから参照される。
 - **主な不変条件:** `INV-SOURCE-001`、`INV-SOURCE-002`、`INV-SOURCE-003`。
 
-Content Fingerprintは解析対象Contentを比較するための値であり、Algorithm、Normalization規則、保存方式はPipeline / Persistence設計で決める。Source URLのみが変わりContentが同じならSourceDocumentのCurrent Locatorを更新し、旧SourceRevisionとその取得時URLは維持する。Content Revisionを作るのはContentが変わった場合であり、URL変更そのものをContent変更とみなさない。新Revisionが作られた際は、その取得に対応するURL・Metadata Snapshotを記録する。
+Content Fingerprintは解析対象Contentを比較するための値であり、Algorithm、Normalization規則、保存方式はPipeline / Persistence設計で決める。Source URLのみが変わりContentが同じならSourceDocumentのCurrent Locatorを更新し、旧SourceRevisionとその取得時URLは維持する。Content Revisionを作るのはContentが変わった場合であり、URL変更そのものをContent変更とみなさない。新Revisionには取得時URL、Metadata、Policy Decision、Terms Snapshotを記録する。Policy変更はSourceRevisionを書き換えず、新しいSourcePolicyDecisionを追記する。
+
+### SourceReview
+
+- **定義:** HumanがSourceの利用適格性と許可するUsage Purposeを確認するDecision Record。
+- **責務:** Sourceを利用するPolicy上の判断とReviewerの証跡を残す。
+- **識別:** `SourceReviewId`を持つAppend-only Entity。認証方式やReviewer権限は定義しない。
+- **変更性:** Source、Reviewer、Decision、Purpose、Review日時を後から書き換えない。再確認は別Recordとする。
+- **状態・Lifecycle:** `APPROVED_FOR_USE`、`REJECTED`、`NEEDS_MORE_INFORMATION`のいずれかをDecisionとして記録する。Needs More Informationは再ReviewまでSourceを利用できない。
+- **関連:** 1つのSourceDocumentに属し、対応するSourcePolicyDecisionから参照できる。QuestionRevisionを審査するQuestionReviewとは別Conceptである。
+
+### SourcePolicyDecision
+
+- **定義:** 特定SourceとUsage Purposeを評価した時点のClassificationとReasonを表す不変Record。
+- **責務:** `TRUSTED`、`REVIEW_REQUIRED`、`PROHIBITED`のProduct Policy判断を追跡可能にし、Ingestion / Publish Gateへ渡す。
+- **識別:** `SourcePolicyDecisionId`を持つ。SourceDocument、Usage Purpose、評価日時、Reason Code、必要に応じSourceReviewを参照する。
+- **変更性:** Append-only。Terms変更やPolicy変更後も過去Decisionを更新せず、新Decisionを作る。
+- **関連:** SourceRevisionは取得時のDecision ID / Classification / Terms Metadata Snapshotを保持する。Publish GateはQuestionSourceからSourceRevisionへ辿り、最新Decisionを別途確認する。
+
+`AllowedSource` / `SourceAllowRule`はDomain Entityではなく、完全一致Hostname、Owner、Source Kind、Purpose、任意Path Prefixを組み合わせた明示Policy設定である。Wildcard Hostnameで全許可しない。Domain EvaluatorはAllowlist一致だけでTrustedにせず、Origin、アクセス条件、Purpose、Terms Metadataも確認する。詳細は[Sourceガバナンス](source-governance.md)を参照する。
 
 ### QuestionSource
 
 - **定義:** QuestionRevisionの特定のSourceRevisionに対する根拠関係。
 - **責務:** Question作成時点でどのSource Contentを根拠にしたかを追跡可能にする。
-- **識別:** 独立Identityなし。対象QuestionRevision、SourceRevision、必要に応じたClaim / Content Locator等からなるAssociation Value Object。
+- **識別:** 独立Identityなし。対象QuestionRevision、SourceRevision、KnowledgePoint、Usage Purpose、根拠関係を持つAssociation Value Object。
 - **変更性:** 含まれるQuestionRevisionの一部としてImmutable。根拠を修正する場合は新しいQuestionRevisionを作る。
 - **状態・Lifecycle:** 親QuestionRevisionと同時に作成され、親と同じ履歴期間で参照される。
-- **関連:** `QuestionRevision → QuestionSource → SourceRevision → SourceDocument`。SourceDocumentの最新Revisionから推測し直してはならない。
+- **関連:** `QuestionRevision → QuestionSource → SourceRevision → SourceDocument`。各QuestionSourceは同じQuestionRevisionのKnowledgePointと、`NORMATIVE_TECHNICAL` Purpose / Provenance Relationを結ぶ。SourceDocumentの最新Revisionから推測し直してはならない。
 - **主な不変条件:** `INV-QUESTION-004`。ExamFeedbackをQuestionSourceとして登録しない。
 
 ## 問題の作成と公開
@@ -99,12 +118,12 @@ Content Fingerprintは解析対象Contentを比較するための値であり、
 - **識別:** 親Question内でstableな`QuestionRevisionId`。Revision 1 / 2の順序はDomain上で認識するが、番号・Storage Key形式は決めない。
 - **変更性:** **ContentはImmutable**。Stem、Question Type、Options、Correct Answer、Explanation、Language、Difficulty、KnowledgePoint関係、QuestionSourceを更新しない。誤植や根拠修正を含む変更は新Revisionとする。Review / Publication LifecycleはContentとは別の状態情報。
 - **状態・Lifecycle:** `DRAFT` → `REVIEW_REQUIRED` → `PUBLISHED`、またはReview結果の`CHANGES_REQUESTED` / `REJECTED`。Draft状態でもRevision Identityが付与済みならContentは凍結済み。
-- **関連:** 1つのQuestionに属し、1つ以上のKnowledgePointと、Publishに必要な1つ以上のQuestionSourceを持つ。QuestionReviewは正確にこのRevisionを対象とする。
+- **関連:** 1つのQuestionに属し、1つ以上のKnowledgePointと、各KnowledgePointのSourceRevision根拠を示す1つ以上のQuestionSourceを持つ。QuestionReviewは正確にこのRevisionを対象とする。Publish時は取得時と現在のSource Policyを再検査する。
 - **主な不変条件:** `INV-QUESTION-002`〜`INV-QUESTION-006`。
 
 ### QuestionReview
 
-- **定義:** ReviewerであるHumanが特定QuestionRevisionを確認したDecision Record。
+- **定義:** ReviewerであるHumanが特定QuestionRevisionの品質と公開可否を確認したDecision Record。
 - **責務:** Publishを許可する明示的Human Approval、または修正依頼 / Rejectの証跡を残す。
 - **識別:** 各記録は`QuestionReviewId`で識別するAppend-only Entity。1つのQuestionRevisionに対する決定的なReview Recordは最大1件とする。
 - **変更性:** Decision、Reviewer Identity、Reviewed At、Commentを後から書き換えない。訂正が必要なら別Review Recordを作る。
@@ -133,8 +152,8 @@ Content Fingerprintは解析対象Contentを比較するための値であり、
 - **識別:** 各提出に`ExamFeedbackId`があり、提出者はOpaque `LearnerId`で表す。
 - **変更性:** 提出済みFeedback内容はImmutableなRecord。訂正・再提出は新しいRecordとする。提出後のHandlingは改善判断のFlowであり、Normative Source化のLifecycleではない。
 - **状態・Lifecycle:** 提出後、Reviewer / 改善判断に利用可能なSignalとなる。QuestionのSourceとしてPublishされるLifecycleは持たない。
-- **関連:** Certification / ExamTopic等の抽象化されたTopic情報と関連付け得る。QuestionSourceやSourceRevisionへの根拠関係は持たない。
-- **主な不変条件:** `INV-FEEDBACK-001`。実問題全文、選択肢、Screenshot、Exam Dump、再構成した正確な問題は正規Domain Contentとして扱わない。詳細PolicyとInput制御はIssue #7の対象。
+- **関連:** Certification / ExamTopic等の抽象化されたTopic情報と関連付け得る。Topic Emphasis、Difficulty Impression、Question Style、Hands-on Importance、Troubleshooting Prevalence、Coverage Gapなどを扱う。QuestionSourceやSourceRevisionへの根拠関係は持たない。
+- **主な不変条件:** `INV-FEEDBACK-001`。実問題Stem / 選択肢、Screenshot、Exam Dump、再構成問題、Close Paraphrase、Answer Keyは正規Domain Contentとして扱わない。詳細は[Sourceガバナンス](source-governance.md)に従う。
 
 ### LearningProgress
 

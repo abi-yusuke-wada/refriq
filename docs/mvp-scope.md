@@ -94,34 +94,17 @@ role
 
 ## Source policy
 
-### Allowed sources
+詳細なSource Policyの正本は[Sourceガバナンス](domain/source-governance.md)である。Domainで利用可否を`TRUSTED`、`REVIEW_REQUIRED`、`PROHIBITED`に分類し、Allowlist、Source Review、Provenance、Ingestion / Publish Gateを機械的に検証する。
 
-Knowledge Pipelineでは、原則としてKongが公式に公開している情報だけを利用する。候補Sourceは次のとおり。
+- `TRUSTED`: Source Origin、Access、利用目的、Terms / License Metadataを確認した明示Allowlist Source。通常のKnowledge / Question Pipelineへ進めるが、Questionの自動公開はできない。
+- `REVIEW_REQUIRED`: Source利用可否に未解決事項がある。Metadataの登録とReview待ちはできるが、Human Source Review完了までSource本文をKnowledge / Question Pipelineへ流さない。
+- `PROHIBITED`: Exam Dump等の禁止Source、利用禁止が明確なSource、アクセス制御を回避して取得したContent。本文はPipeline・長期保存・Fixture・Logへ含めない。
 
-- [Kong Gateway Certified Associate Exam Preparation](https://konghq.com/academy/exam-preparation)
-- [Kong Gateway公式Documentation](https://developer.konghq.com/gateway/)
-- Kong Gateway公式Entity Documentation
-- decK公式Documentation
-- Kong公式Learning Content
-- Kong公式Learning Lab
-- Kong公式Sample Question
+Normative Technical Sourceには公式公開Sourceを使う。Community / Secondary SourceはSource Review後もDiscovery / Supplemental Hintに用途を限定し、技術的正答の根拠にしない。認証・License・Termsが未確認のSourceを公式HostだけでTrustしない。実装したGateおよび禁止Content一覧は[Sourceガバナンス](domain/source-governance.md)に従う。
 
-Sourceを自動取得・保存する前に、対象コンテンツの利用規約、ライセンス、robots方針、保存・再配布条件を確認する。公式に公開されていても、条件上取得・保存できないコンテンツはPipelineのSourceにしない。確認結果はSourceの採用判断として追跡可能にするが、具体的なデータ項目や保存先は後続設計で定義する。
+初期のSource候補は[Kong公式Exam Preparation](https://konghq.com/academy/exam-preparation)、[公開Gateway Documentation](https://developer.konghq.com/gateway/)、Kong Gateway Entity Documentation、decK Documentation、Learning Content / Lab、Official Sample Questionである。MVP Allowlistには確認範囲を絞ったKongのCertification Scope / Gateway Documentation Ruleを置く。個々の利用可否はTerms等のMetadataを別途確認し、ADRで全Hostを許可しない。
 
-Academyなど認証が必要なコンテンツは、MVPの自動Crawler対象に含めない。認証回避や利用条件に反する取得を行わない。
-
-### Prohibited sources
-
-次はSourceとして収集・利用しない。
-
-- Exam Dump
-- 流出した実試験問題
-- 実試験画面のScreenshot
-- 受験者が再現した実問題本文
-- 実試験の選択肢
-- 利用条件上取得できないコンテンツ
-
-受験者のExam Feedbackは問題生成のSourceではない。試験傾向や不足Topicを抽象化した改善Inputとしてのみ扱う。
+受験者のExamFeedbackは技術的正しさのSourceではない。Topic Emphasis、Difficulty Impression、Question Style、Hands-on Importance、Troubleshooting Prevalence、Coverage Gapのような抽象化した改善Signalのみ受け入れる。実問題Stem / Options、Screenshot、Answer Key、再構成問題、Close Paraphraseを受け取らない。
 
 ## MVP functional scope
 
@@ -132,6 +115,8 @@ MVPでは、次の一連の処理を成立させる。
 ```text
 Official Source
       ↓
+Source Policy Gate
+      ↓ TRUSTED
 Fetch
       ↓
 Normalize
@@ -150,9 +135,9 @@ Question Generation
       ↓
 Automated Validation
       ↓
-REVIEW_REQUIRED
+Question Review Required
       ↓
-Human Review
+Human Question Review
       ↓
 PUBLISHED
 ```
