@@ -76,6 +76,8 @@ MakefileをRepository Validationの共通入口とし、基本Validation Command
 make check
 ```
 
+GitHub ActionsのRepository全体Quality Gateも `make check` を使用する。
+
 コードまたは設定を変更したら、原則として `make check` を実行する。Formattingが必要な場合は、次の順序で実行する。
 
 ```bash

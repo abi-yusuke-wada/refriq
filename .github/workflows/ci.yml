@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31.10.6
+
+      # Cache failures are non-blocking; make check remains the quality gate.
+      - name: Cache Nix store
+        uses: nix-community/cache-nix-action@v7.0.2
+        continue-on-error: true
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.nix', 'flake.lock') }}
+          restore-prefixes-first-match: |
+            nix-${{ runner.os }}-
+
+      - name: Resolve pnpm store path
+        id: pnpm-store
+        run: echo "path=$(nix develop --command pnpm store path)" >> "$GITHUB_OUTPUT"
+
+      # Cache failures are non-blocking; dependency installation and make check still fail normally.
+      - name: Cache pnpm store
+        uses: actions/cache@v6.0.0
+        continue-on-error: true
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('flake.nix', 'flake.lock', 'pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: nix develop --command pnpm install --frozen-lockfile
+
+      - name: Run repository quality gate
+        run: nix develop --command make check
