@@ -52,4 +52,6 @@ GitHub Repositoryの **Settings → Secrets and variables → Actions → Secret
 | `LLM_API_BASE_URL` | 許可されたOpenAI互換APIのBase URL |
 | `LLM_API_KEY` | 同APIの認証Key |
 
+必要に応じてRepository Variable `REVIEW_MODEL` に、接続先APIで利用できるモデルIDを設定する。未設定時は `preview/Kimi-K2.7-Code` を使う。別のAPIを使う場合は、そのAPIが公開するモデルIDを指定する。
+
 `GITHUB_TOKEN`はGitHub Actionsが提供し、WorkflowにはPR情報取得・Review投稿用の`pull-requests: write`だけを許可する。Review AppはPull Requestの差分を設定されたLLM APIへ送信するため、Secretsを設定する前に接続先とコード共有条件を確認する。未設定の場合、AI Review Workflowは明示的なエラーで失敗する。
