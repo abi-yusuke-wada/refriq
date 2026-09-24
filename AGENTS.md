@@ -110,6 +110,9 @@ Accepted ADRの判断を変更するときは、古いADRを削除・改変せ�
 
 Source利用に関する変更は [`docs/mvp-scope.md`](docs/mvp-scope.md) と関連ADRを確認する。Exam Dumpや実試験問題をSourceとして追加しない。
 
+- Exam Dump、流出問題、再構成した実試験問題をSource、Fixture、Test、Prompt、Logへ含めない。
+- Source利用は [`docs/domain/source-governance.md`](docs/domain/source-governance.md) のPolicyに従う。QuestionRevisionはProvenanceとHuman QuestionReviewなしに公開しない。
+
 ## Repository Scope
 
 RootのRuleは短く保ち、異なるRuleが本当に必要になるまで下位Directoryの `AGENTS.md` は追加しない。独自Agent Runtime、Orchestrator、Codex Wrapper CLI、Prompt Management System、自動Issue作成AgentなどのAgent Frameworkは作らず、AGENTS.md、Issue、Acceptance Criteria、Verification、Architecture Docs、ADR、Makefile、Tests、CIをRepository Contractとして利用する。

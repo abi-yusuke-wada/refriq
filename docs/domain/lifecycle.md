@@ -18,6 +18,28 @@ flowchart LR
 - URLのみが変わりContentが変わらない場合はSourceDocumentのCurrent Locatorを更新する。URL変更だけで新しいContent Revisionを作らず、旧Revisionの取得時URLも変更しない。
 - SourceRevisionは`retrievedAt`、Content Fingerprint、取得時Metadata Snapshot、取得時Source URLを含む概念である。Hash Algorithm、Normalization、保存方式は決めない。
 - SourceDocumentをRetireしても過去Revisionとそれを参照するQuestionSourceは維持する。
+- SourceRevisionには取得時点の`TRUSTED` Classification、SourcePolicyDecision、Terms / License Metadata Snapshot、必要に応じSourceReview参照を追加する。Policy変更で既存Revisionを書き換えない。
+- 最新Policy判断はSourceDocument / Usage Purposeに対する別のSourcePolicyDecisionとして追加する。過去の決定とRevision Snapshotは変更しない。
+- Knowledge Extraction前にSource Policy Gateを通す。`REVIEW_REQUIRED`はSourceReview完了まで停止し、`PROHIBITED`は拒否Metadata以外の本文をPipelineへ渡さない。
+
+### Source Policy Gate
+
+```mermaid
+flowchart TD
+  M[Source候補Metadata] --> E[決定的なPolicy判定]
+  E -->|TRUSTED・許可Purpose| R[SourceRevisionの不変Snapshot]
+  E -->|REVIEW_REQUIRED| H[Human Source Review待ち]
+  H -->|APPROVED_FOR_USE・条件充足| E
+  H -->|NEEDS_MORE_INFORMATION| W[利用停止・Metadata確認]
+  H -->|REJECTED| P[PROHIBITED・拒否Metadataのみ]
+  E -->|PROHIBITED| P
+  R --> K[KnowledgePoint生成]
+```
+
+- Allowlist一致のみではSourceをTRUSTEDにしない。Origin、Owner / Kind、Access、Usage Purpose、Terms、automated accessのMetadataを合わせて評価する。
+- Human Source ReviewはSource利用可否を判定する。Question品質を判定するQuestionReviewとは別Recordである。
+- Sourceの分類は用途別である。Community / Secondary SourceはSource Review後でもDiscovery / Supplemental Hintまでとし、Normative Technical Sourceにしない。
+- Source candidate Metadataだけの登録は`REVIEW_REQUIRED`でも可能。Source本文をKnowledge / Question PipelineやPromptへ渡すのは許可後に限る。
 
 ## Questionと公開のライフサイクル
 
@@ -79,7 +101,7 @@ Answer時に表示した`QuestionRevisionId`をUserAnswerに固定する。Quest
 ExamFeedback                       → 試験体験がどう感じられたか
 ```
 
-ExamFeedbackはCoverage / Difficulty / Style等の改善Signalであり、技術的正答のNormative Source、QuestionSource、SourceRevisionに変換しない。実問題全文、選択肢、Screenshot、Exam Dump、再構成した正確な問題はDomain上の正規Feedback Contentに含めない。具体的なInput Policy / Content DetectionはIssue #7で扱う。
+ExamFeedbackはCoverage / Difficulty / Style等の改善Signalであり、技術的正答のNormative Source、QuestionSource、SourceRevisionに変換しない。許容する抽象化Signalと禁止Contentは[Sourceガバナンス](source-governance.md)で定義する。実問題全文、選択肢、Screenshot、Exam Dump、再構成した正確な問題はDomain上の正規Feedback Contentに含めない。具体的なUI入力制御、検知方式、Retentionは後続のLearner / Reviewer設計で決める。
 
 ## 不変条件一覧とテストケース対応
 
@@ -110,6 +132,20 @@ ExamFeedbackはCoverage / Difficulty / Style等の改善Signalであり、技術
 - **When（操作）:** 次の取得・解析対象Contentが異なる。
 - **Then（結果）:** Revision 1を書き換えず新Revisionを作成する。新Revisionは取得時MetadataとURLを記録する。
 - **Expected test（想定テスト）:** 異なるContent Fingerprintで新Revisionが作られ、既存Revisionを参照するQuestionSourceは変わらない。
+
+### INV-SOURCE-004 — Source Policy Gateは fail closed
+
+- **Given（前提）:** Source候補にPolicy Metadata、Allowlist、任意のSourceReviewがある。
+- **When（操作）:** SourceをKnowledge Extraction、Question Generation、SourceRevision、QuestionSourceへ進める。
+- **Then（結果）:** `TRUSTED`で用途に合うSourceだけを通す。`REVIEW_REQUIRED`は承認前に拒否し、`PROHIBITED`は常に拒否する。Missing / Unknown / Ambiguousは`TRUSTED`にしない。
+- **Expected test（想定テスト）:** TRUSTED / REVIEW_REQUIRED / PROHIBITED / UNKNOWNとSourceReviewのApprove / Reject / Needs More Information、Prohibited SourceのSourceRevision / QuestionSource作成を検証する。
+
+### INV-SOURCE-005 — Policy Decision変更はSourceRevisionを変更しない
+
+- **Given（前提）:** SourceRevisionに取得時Source URL、Fingerprint、TRUSTED Classification、Terms Snapshot、Policy Decision参照が記録されている。
+- **When（操作）:** Terms変更等によりSourceの現在Classificationが変わる。
+- **Then（結果）:** SourceRevisionのContentと取得時Snapshotは不変のまま、新しいSourcePolicyDecisionを追記する。Publish Gateは最新Decisionを別途確認する。
+- **Expected test（想定テスト）:** 後日のPROHIBITED Decisionを作っても既存SnapshotはTRUSTEDの取得時判断を保持し、Publish判定は最新Decisionで拒否する。
 
 ### INV-KNOWLEDGE-001 — KnowledgePointは主たるExamTopicを持つ
 
@@ -167,6 +203,13 @@ ExamFeedbackはCoverage / Difficulty / Style等の改善Signalであり、技術
 - **Then（結果）:** QはCurrent Published Revisionを1つだけ持ち、新状態ではRevision 2を指す。未承認Revisionでは切り替えず、従来の公開履歴は残す。
 - **Expected test（想定テスト）:** Current pointerは存在する公開済Revisionを1つだけ参照し、Review中のRevisionでは変化しない。
 
+### INV-QUESTION-007 — PublishはProvenanceと現在Source Policyを再確認する
+
+- **Given（前提）:** QuestionRevisionにHuman `APPROVE`、KnowledgePoint、取得時SourceRevision Provenanceがある。
+- **When（操作）:** QuestionRevisionをPublishする。
+- **Then（結果）:** 各KnowledgePointからQuestionSourceを通じてSourceRevisionとSourceDocumentへ到達でき、取得時およびPublish時のPolicyが用途に対して`TRUSTED`であることを確認する。Human QuestionReviewは同一QuestionRevisionの判断でなければならない。Review未承認、根拠不足、現在Policyが`REVIEW_REQUIRED` / `PROHIBITED`ならPublishを拒否する。
+- **Expected test（想定テスト）:** Provenanceなし、Human Reviewなし、古いSource Revision / Decision参照、または現在Source Policyが未許可のQuestion RevisionをPublishできない。Source Policyが後で変わってもQuestionRevision / SourceRevision Snapshotは不変。
+
 ### INV-REVIEW-001 — Reviewは変更できないHumanの証跡
 
 - **Given（前提）:** QuestionReviewが特定RevisionにDecisionを記録している。
@@ -192,7 +235,7 @@ ExamFeedbackはCoverage / Difficulty / Style等の改善Signalであり、技術
 
 - **Given（前提）:** LearnerがTopic Emphasis等の抽象化Feedbackを提出する。
 - **When（操作）:** FeedbackをQuestion生成・Reviewの根拠として扱おうとする。
-- **Then（結果）:** Feedbackは改善Signalとしてのみ利用し、QuestionSource / SourceRevision / Normative Sourceにしない。実問題を正規Domain Contentとして受理しない。
+- **Then（結果）:** FeedbackはTopic Emphasis、Difficulty Impression、Question Style、Hands-on Importance、Troubleshooting Prevalence、Coverage Gap等の抽象化された改善Signalとしてのみ利用し、QuestionSource / SourceRevision / Normative Sourceにしない。Exact Stem / Options、Screenshot、Answer Key、再構成問題、Close Paraphraseを正規Domain Contentとして受理しない。
 - **Expected test（想定テスト）:** ExamFeedbackからQuestionSourceを作成できず、抽象化されたFeedbackとSource参照を別Conceptとして扱う。
 
 ### INV-PROGRESS-001 — LearningProgressは回答履歴から導くProjection
@@ -209,8 +252,8 @@ ExamFeedbackはCoverage / Difficulty / Style等の改善Signalであり、技術
 | User / Learner / ReviewerのIdentityは同じPrincipalか。Authentication Provider、Identity形式は何か。 | User IdentityとAuthenticationは後続設計。Cognito、Google Login、Email等をDomain決定にしない。 |
 | Review permissionとReviewer roleをどう判定するか。 | Issue #10のReviewer操作設計と、Security設計で決める。Human Approvalが必要というInvariantは維持する。 |
 | LearningProgressのAccuracy、分母、期間、重み付け、更新頻度はどうするか。 | Calculationは未決定。Issue #9のLearner表示要件とApplication / Persistence設計で確定する。 |
-| SourceのAllow / Deny、利用規約・License、取得・保存可能範囲、禁止Inputをどう確認するか。 | Issue #7でSource Governanceを定義する。 |
+| DomainのSourcePolicyDecisionを実データのPolicy Configとどう同期し、古いDecisionをどう保持するか。 | Policy履歴はAppend-onlyとし、Persistence / RetentionはIssue #12で定義する。 |
 | Source Content Fingerprintの対象表現、Normalization、取得MetadataのSchemaは何か。 | Issue #8のPipelineとIssue #12のPersistence Mappingで決める。 |
 | KnowledgePointの粒度、Source変更時の再評価、Question再Reviewを要求する判定規則は何か。 | Issue #8でPipeline責務として決める。KnowledgePoint独自RevisionはMVPで導入しない。 |
 | Current Published QuestionをWithdraw / RestoreするDomain Commandと、その場合の過去回答表示はどうなるか。 | MVPに明確なUse CaseがないためStateを追加していない。必要性が確認されたIssueで定義する。 |
-| ExamFeedbackの入力Validation、Retention、違反Contentの扱いは何か。 | Issue #7のSource Governanceと後続Learner / Reviewer設計で決める。 |
+| ExamFeedbackの入力UI Validation、Retention、違反Inputの運用処理は何か。 | Prohibited Contentを正規Domain Data / Logに含めないPolicyを守り、具体的なUI / Persistence処理は後続Learner / Reviewer設計で決める。 |

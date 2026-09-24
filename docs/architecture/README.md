@@ -14,6 +14,7 @@ Architecture DocumentとADRの責務は分ける。
 | [`README.md`](../../README.md) | Project概要と開発開始方法 |
 | [`docs/mvp-scope.md`](../mvp-scope.md) | MVPで何を作るか、対象外、完了条件 |
 | [`docs/domain/`](../domain/) | 各Domain Conceptの意味、Identity、Lifecycle、不変条件 |
+| [`docs/domain/source-governance.md`](../domain/source-governance.md) | Source Policy、許可条件、Provenance、Ingestion / Publish Gate |
 | `docs/architecture/` | 現在のArchitecture |
 | [`docs/adr/`](../adr/) | Architecture Decisionを行った理由、Alternatives、Consequences |
 | [`AGENTS.md`](../../AGENTS.md) | Codexを含む開発者が常に守るRepository Rule |
@@ -27,6 +28,7 @@ Architecture DocumentとADRの責務は分ける。
 
 - `apps/`: `web`、`api`、`pipeline`
 - `packages/`: `domain`、`application`、`contracts`
+- `packages/domain`: Source Classification、利用Gate、Provenance / Publish Ruleを持つ。Pipeline OrchestrationやPersistenceは持たない。
 - `Makefile`: Human、Codex、将来のCIが利用する共通Validation入口
 - `docs/mvp-scope.md`: MVPのScopeとSource Policy
 - `docs/adr/`: Architecture Decisionの履歴

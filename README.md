@@ -114,6 +114,8 @@ Exam Feedback Loop
 
 Exam Dump、流出問題、受験者による実試験問題の再現などは、問題生成ソースとして利用しません。
 
+Sourceの利用可否は`TRUSTED` / `REVIEW_REQUIRED` / `PROHIBITED`に分類し、Human Source ReviewとQuestion Reviewを別々に扱います。`TRUSTED` SourceでもQuestionの自動公開はできません。分類基準、Allowlist、Provenance、Ingestion / Publish Gateは[Source Governance](docs/domain/source-governance.md)を参照してください。
+
 ## Initial Scope
 
 最初から複数資格を扱う巨大な共通基盤は作りません。
@@ -140,7 +142,7 @@ Feedback
 
 また、既に高品質な外部教材が存在する資格については、自前教材を作成せず、外部教材を案内する方針です。
 
-MVPの対象資格、Scope、完了条件、対象外は [MVP Scope](docs/mvp-scope.md) にまとめています。Domain ConceptとLifecycleは [Domain Model](docs/domain/) に、現在のArchitectureは [Architecture Docs](docs/architecture/) に、Architecture Decisionは [ADR](docs/adr/) にまとめています。Repository全体の開発Ruleは [AGENTS.md](AGENTS.md) を参照してください。
+MVPの対象資格、Scope、完了条件、対象外は [MVP Scope](docs/mvp-scope.md) にまとめています。Domain ConceptとLifecycleは [Domain Model](docs/domain/) に、Sourceの利用判定とProvenanceは [Source Governance](docs/domain/source-governance.md) に、現在のArchitectureは [Architecture Docs](docs/architecture/) に、Architecture Decisionは [ADR](docs/adr/) にまとめています。Repository全体の開発Ruleは [AGENTS.md](AGENTS.md) を参照してください。
 
 ## Architecture Principles
 
