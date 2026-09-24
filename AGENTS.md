@@ -94,6 +94,10 @@ Documentationのみの変更など、全Validationが明らかに不要な場合
 
 Node.jsとpnpmは `flake.nix` が提供するものを使用する。開発Shellが必要な場合は `direnv allow` または `nix develop` を使う。
 
+## PRのAIレビュー
+
+Pull RequestのAI Review指摘は [`docs/development-workflow.md`](docs/development-workflow.md) に従い、IssueのScope、Repository Rule、ADR、実装を照合して分類する。VALIDかつScope内の指摘だけを修正し、修正後は `make check` を実行してPushする。AI ReviewはHuman Reviewの代替にしない。
+
 ## Failure Handling
 
 - Validation Errorを無視しない。

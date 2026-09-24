@@ -291,6 +291,8 @@ MVPでは、特に以下を意識します。
 - AI生成問題はHuman Review後に公開する
 - 将来必要になるかもしれない機能を先回りして実装しない
 
+Pull RequestのCI、AI Review、指摘の分類・修正手順は[開発・PRレビュー手順](docs/development-workflow.md)を参照してください。
+
 ## Status
 
 Early development / MVP planning
