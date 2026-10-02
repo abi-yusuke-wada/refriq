@@ -70,6 +70,7 @@ ADRでは最低限、次のStatusを使用する。
 - [ADR-0003: Use Biome and Vitest for JavaScript Validation](0003-use-biome-and-vitest-for-javascript-validation.md)
 - [ADR-0004: Use Stable Domain Identities and Immutable Revisions](0004-use-stable-domain-identities-and-immutable-revisions.md)
 - [ADR-0005: Source Policyと利用Gateを定義する](0005-enforce-source-governance-gates.md)
+- [ADR-0006: Question PipelineのStage契約とProvider境界を定義する](0006-define-question-pipeline-stage-contracts.md)
 
 ## Template
 

@@ -7,6 +7,7 @@ import {
   createQuestionSourceAssociation,
   createSourceRevisionPolicySnapshot,
   evaluateSourcePolicy,
+  validateSourceRevisionPolicySnapshot,
   type AllowedSource,
   type SourcePolicyCandidate,
   type SourceReviewRecord,
@@ -355,6 +356,38 @@ describe("Source Policy", () => {
 
     expect(result.allowed).toBe(false);
     expect(result.reasonCodes).toContain("SOURCE_NOT_ALLOWLISTED");
+  });
+
+  it("保存後に復元されたSourceRevisionを取得時Ruleで検証し、Snapshotを変更しない", () => {
+    const result = makeRevisionSnapshot();
+    if (!result.allowed)
+      throw new Error("Synthetic SourceRevision is required");
+    const restoredSnapshot = structuredClone(result.snapshot);
+
+    expect(validateSourceRevisionPolicySnapshot(restoredSnapshot)).toEqual({
+      allowed: true,
+      reasonCodes: [],
+    });
+    expect(restoredSnapshot).toEqual(result.snapshot);
+  });
+
+  it("復元されたSnapshotも新規Snapshotと同じ取得時Allowlistで拒否する", () => {
+    const result = makeRevisionSnapshot();
+    if (!result.allowed)
+      throw new Error("Synthetic SourceRevision is required");
+    const restoredSnapshot = {
+      ...result.snapshot,
+      sourceUrlAtRetrieval: "https://unlisted.example.test/content",
+    };
+    const snapshotGate = validateSourceRevisionPolicySnapshot(restoredSnapshot);
+    const creationGate = createSourceRevisionPolicySnapshot(
+      evaluate(),
+      restoredSnapshot,
+    );
+
+    expect(snapshotGate.allowed).toBe(false);
+    expect(snapshotGate.reasonCodes).toEqual(creationGate.reasonCodes);
+    expect(snapshotGate.reasonCodes).toContain("SOURCE_NOT_ALLOWLISTED");
   });
 });
 

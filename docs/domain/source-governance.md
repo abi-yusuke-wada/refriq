@@ -183,6 +183,7 @@ Domain Ruleは外部HTTP、DB、LLM、Crawlerに依存しない決定的な関�
 - `evaluateSourcePolicy`: explicit metadata、Allowlist、Prohibited Category、SourceReviewからClassificationとReason Codeを作る。
 - `canUseForKnowledgeExtraction` / `canUseForQuestionGeneration`: Pipeline利用を許可・拒否する。
 - `createSourceRevisionPolicySnapshot`: 不十分なProvenanceや`TRUSTED`でないSourceからRevision Snapshotを作らない。
+- `validateSourceRevisionPolicySnapshot`: 復元したRevision SnapshotのProvenanceと取得時Allowlistへの整合を、新規作成時と同じRuleで検証する。現在のPolicy Decisionは別途Gateで確認する。
 - `createQuestionSourceAssociation`: `TRUSTED`な技術根拠SourceRevision以外をQuestionSourceにしない。
 - `canPublishQuestionRevision`: KnowledgePoint / SourceRevision Trace、現在Source Policy、Human QuestionReviewを一括検査する。
 

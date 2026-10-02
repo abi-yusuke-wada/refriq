@@ -1,0 +1,22 @@
+{
+  "question": {
+    "type": "single_choice",
+    "stem": "Which resources receive a matching request?",
+    "options": [
+      { "id": "A", "text": "The associated Service" },
+      { "id": "B", "text": "Every Service" }
+    ],
+    "correctOptionIds": ["A", "B"],
+    "explanation": "This fixture violates the single-choice answer count invariant.",
+    "optionExplanations": {
+      "A": "A synthetic explanation.",
+      "B": "A synthetic explanation."
+    },
+    "sourceReferences": [
+      {
+        "sourceRevisionId": "source-revision-routing-01",
+        "locator": "section:route-service-link"
+      }
+    ]
+  }
+}

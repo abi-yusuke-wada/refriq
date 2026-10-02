@@ -1,0 +1,9 @@
+{
+  "knowledgePoints": [
+    {
+      "title": "Route matching selects a service",
+      "summary": "A fictional gateway route directs matching requests to a service.",
+      "examTopicId": "topic-routing"
+    }
+  ]
+}
