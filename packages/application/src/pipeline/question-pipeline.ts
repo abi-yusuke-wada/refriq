@@ -108,6 +108,9 @@ export async function resumeQuestionPipeline(
     stages: { ...previousRun.stages },
     stageRunHistory: [...previousRun.stageRunHistory],
     artifacts: { ...previousRun.artifacts },
+    ...(previousRun.immutableInputFingerprint !== undefined
+      ? { immutableInputFingerprint: previousRun.immutableInputFingerprint }
+      : {}),
   };
   let parsedInput: QuestionPipelineInput;
   try {

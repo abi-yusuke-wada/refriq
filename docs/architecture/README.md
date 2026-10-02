@@ -59,7 +59,7 @@ flowchart TD
 
 ### Source ProvenanceとLLM Request Context
 
-`PipelineInput`では、Domainの`SourceRevisionPolicySnapshot`と現在の`SourcePolicyDecision`を受け取り、`canUseForKnowledgeExtraction` / `canUseForQuestionGeneration`でGateする。取得時Snapshotは変更せず、現在のPolicy Decisionは別のDecisionとして扱う。
+`PipelineInput`では、Domainの`SourceRevisionPolicySnapshot`と現在の`SourcePolicyDecision`を受け取る。取得時Snapshotは`validateSourceRevisionPolicySnapshot`でProvenanceと取得時Allowlistへの整合を検証し、現在の利用可否は`canUseForKnowledgeExtraction` / `canUseForQuestionGeneration`でGateする。取得時Snapshotは変更せず、現在のPolicy Decisionは別のDecisionとして扱う。
 
 SourceRevisionのProvenanceとLLMへ渡す文章Contextは分ける。Pipeline Inputには取得済みRevision全体ではなく、Revision ID / Snapshotと呼び出し元が選んだ`GroundingSegment`を渡す。Knowledge Extractionは入力されたSegmentを利用し、PlanningはKnowledgePointの要約と参照だけを使い、Generation / Evaluationは対象QuestionのSourceReferenceと一致するSegmentだけを選択する。候補にはReviewerが確認できるSourceRevision Snapshot、Source URL、Locator、実際に利用したGrounding Segmentを保持する。
 
@@ -69,9 +69,9 @@ SourceRevisionのProvenanceとLLMへ渡す文章Contextは分ける。Pipeline I
 
 Schema / Programmatic Validationは決定論的な構造・参照条件を検査する。
 
-- 必須Field、Enum、余分なFieldをSchemaで検査する。未知のQuestion Typeは拒否する。
+- 必須Field、Enum、余分なFieldをSchemaで検査する。空白だけの必須文字列と未知のQuestion Typeは拒否する。
 - SourceReferenceは入力Context内のSourceRevision ID / Locatorと一致しなければならない。
-- QuestionIntentは入力KnowledgePointを参照し、Question CandidateはそのIntentのKnowledgePoint / Question Typeを維持する。
+- QuestionIntentは入力KnowledgePointを参照し、Question CandidateはそのIntentのKnowledgePoint / Question Typeを維持する。Generation OutputとEvaluation Inputでも、選択した各KnowledgePointに対応するSourceReferenceを必須とする。
 - Option ID重複、存在しない正答ID、Explanationの欠落を拒否する。
 - `single_choice`は正答1件、`multiple_select`は1件以上を必須とする。
 - Evaluation DecisionはChecksから決定的に導出する。いずれか`FAIL`なら`REJECT`、`CONCERN`のみがある場合は`REVISE`、全て`PASS`の場合は`PASS`とする。
@@ -96,7 +96,7 @@ stateDiagram-v2
     SUCCEEDED --> [*]
 ```
 
-`QuestionPipelineRun`はStageごとの現在Status、Attempt、開始・完了時刻、失敗理由、およびAttempt履歴を返す。Providerが返すprovider / model / prompt version / request IDはprovider-neutralな`generationMetadata`としてStage Resultに残す。Schema / Input Validation失敗またはProvider失敗では後続Stageを実行しない。Provider Errorは`retryable: true`として同じStageから再実行できる。Validation Errorは`retryable: false`で原因を修正した後に明示的に再試行する。`resumeQuestionPipeline`は直前までに得た検証済みArtifactを保持し、FAILED Stageと後続Stageだけを再実行する。現在Persistenceはなく、Run Artifactの耐久保存は行わない。
+`QuestionPipelineRun`はStageごとの現在Status、Attempt、開始・完了時刻、失敗理由、およびAttempt履歴を返す。Providerが返すprovider / model / prompt version / request IDはprovider-neutralな`generationMetadata`としてStage Resultに残す。Schema / Input Validation失敗またはProvider失敗では後続Stageを実行しない。Provider Errorは`retryable: true`として同じStageから再実行できる。Validation Errorは`retryable: false`で原因を修正した後に明示的に再試行する。`resumeQuestionPipeline`は直前までに得た検証済みArtifactを保持し、FAILED Stageと後続Stageだけを再実行する。再開入力のValidationやSource Policy Gateが失敗しても入力Fingerprintを保持し、入力を修正した再開とImmutable Inputを変更した再開を区別する。現在Persistenceはなく、Run Artifactの耐久保存は行わない。
 
 `REVISE` / `REJECT`はExecution Failureではない。全Stageを正常実行した後ならPipeline RunとEvaluation Stageは`SUCCEEDED`のまま、候補の`reviewEligibility`で結果を分ける。`PASS`も`ELIGIBLE_FOR_HUMAN_REVIEW`を示すだけで、Human `APPROVE`やPublish許可を作らない。
 

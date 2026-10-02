@@ -674,22 +674,23 @@ export function canUseForQuestionGeneration(
   return { allowed: false, reasonCodes: ["SOURCE_USAGE_NOT_ALLOWED"] };
 }
 
-export function createSourceRevisionPolicySnapshot(
-  decision: SourcePolicyDecision,
+function sourceRevisionProvenanceReasonCodes(
+  decision: Pick<
+    SourcePolicyDecision,
+    | "sourceDocumentId"
+    | "sourcePolicyDecisionId"
+    | "sourceKind"
+    | "usagePurpose"
+    | "matchedAllowRuleSnapshot"
+    | "sourceMetadataSnapshot"
+  >,
   input: SourceRevisionMetadataInput,
-): SourceRevisionSnapshotResult {
+): SourcePolicyReasonCode[] {
   const reasonCodes: SourcePolicyReasonCode[] = [];
-  if (decision.classification !== "TRUSTED") {
-    if (decision.classification === "PROHIBITED") {
-      reasonCodes.push(...decision.reasonCodes);
-    } else {
-      reasonCodes.push(...decision.reasonCodes, "SOURCE_REVIEW_REQUIRED");
-    }
-    reasonCodes.push("SOURCE_POLICY_NOT_TRUSTED");
-  }
+  const retrievalUrl = parseHttpUrl(input.sourceUrlAtRetrieval);
   if (
     !isNonEmpty(input.sourceRevisionId) ||
-    !parseHttpUrl(input.sourceUrlAtRetrieval) ||
+    !retrievalUrl ||
     !isValidTimestamp(input.retrievedAt) ||
     !isNonEmpty(input.contentFingerprint) ||
     !isNonEmpty(decision.sourceDocumentId) ||
@@ -697,7 +698,6 @@ export function createSourceRevisionPolicySnapshot(
   ) {
     reasonCodes.push("MISSING_PROVENANCE");
   }
-  const retrievalUrl = parseHttpUrl(input.sourceUrlAtRetrieval);
   if (
     !decision.matchedAllowRuleSnapshot ||
     !retrievalUrl ||
@@ -716,6 +716,45 @@ export function createSourceRevisionPolicySnapshot(
   ) {
     reasonCodes.push("SOURCE_NOT_ALLOWLISTED");
   }
+  return reasonCodes;
+}
+
+export function validateSourceRevisionPolicySnapshot(
+  snapshot: SourceRevisionPolicySnapshot,
+): PolicyGateResult {
+  const reasonCodes = sourceRevisionProvenanceReasonCodes(
+    {
+      sourceDocumentId: snapshot.sourceDocumentId,
+      sourcePolicyDecisionId: snapshot.sourcePolicyDecisionId,
+      sourceKind: snapshot.sourceKindAtUse,
+      usagePurpose: snapshot.usagePurposeAtUse,
+      sourceMetadataSnapshot: snapshot.sourceMetadataSnapshot,
+      ...(snapshot.matchedAllowRuleSnapshot
+        ? { matchedAllowRuleSnapshot: snapshot.matchedAllowRuleSnapshot }
+        : {}),
+    },
+    snapshot,
+  );
+  if (snapshot.classificationAtUse !== "TRUSTED") {
+    reasonCodes.push("SOURCE_POLICY_NOT_TRUSTED");
+  }
+  return { allowed: reasonCodes.length === 0, reasonCodes };
+}
+
+export function createSourceRevisionPolicySnapshot(
+  decision: SourcePolicyDecision,
+  input: SourceRevisionMetadataInput,
+): SourceRevisionSnapshotResult {
+  const reasonCodes: SourcePolicyReasonCode[] = [];
+  if (decision.classification !== "TRUSTED") {
+    if (decision.classification === "PROHIBITED") {
+      reasonCodes.push(...decision.reasonCodes);
+    } else {
+      reasonCodes.push(...decision.reasonCodes, "SOURCE_REVIEW_REQUIRED");
+    }
+    reasonCodes.push("SOURCE_POLICY_NOT_TRUSTED");
+  }
+  reasonCodes.push(...sourceRevisionProvenanceReasonCodes(decision, input));
 
   if (reasonCodes.length > 0) {
     return { allowed: false, reasonCodes: [...new Set(reasonCodes)] };

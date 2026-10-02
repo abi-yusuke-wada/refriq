@@ -20,10 +20,14 @@ import {
   QUESTION_TYPES,
 } from "./contracts.js";
 
-const nonEmptyString: SchemaObject = { type: "string", minLength: 1 };
+const nonEmptyString: SchemaObject = {
+  type: "string",
+  minLength: 1,
+  pattern: "\\S",
+};
 const stringArray: SchemaObject = {
   type: "array",
-  items: { type: "string", minLength: 1 },
+  items: nonEmptyString,
 };
 const enumSchema = (values: readonly string[]): SchemaObject => ({
   type: "string",

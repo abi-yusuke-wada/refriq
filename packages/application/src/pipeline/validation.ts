@@ -3,6 +3,7 @@ import type { ValidateFunction } from "ajv";
 import {
   canUseForKnowledgeExtraction,
   canUseForQuestionGeneration,
+  validateSourceRevisionPolicySnapshot,
 } from "@refriq/domain";
 import {
   EVALUATION_CRITERIA,
@@ -134,13 +135,10 @@ export function validatePipelineInput(value: unknown): QuestionPipelineInput {
     );
   }
 
-  if (
-    !isHttpUrl(snapshot.sourceUrlAtRetrieval) ||
-    Number.isNaN(Date.parse(snapshot.retrievedAt)) ||
-    !isNonEmpty(snapshot.contentFingerprint)
-  ) {
-    throw new ContractValidationError(
-      "QuestionPipelineInput: SourceRevision metadata is invalid",
+  const snapshotGate = validateSourceRevisionPolicySnapshot(snapshot);
+  if (!snapshotGate.allowed) {
+    throw new SourcePolicyGateError(
+      `QuestionPipelineInput: SourceRevision Policy Snapshot denied (${snapshotGate.reasonCodes.join(", ")})`,
     );
   }
 
@@ -394,6 +392,11 @@ export function validateQuestionGenerationOutput(
     question.sourceReferences,
     "QuestionGenerationOutput.question.sourceReferences",
   );
+  assertSelectedKnowledgePointsGrounded(
+    input.knowledgePoints,
+    question.sourceReferences,
+    "QuestionGenerationOutput.question.sourceReferences",
+  );
   return output;
 }
 
@@ -468,6 +471,11 @@ export function validateQuestionEvaluationInput(
   assertReferencesKnown(
     input.question.sourceReferences,
     referenceSet(input.questionIntent.sourceReferences),
+    "QuestionEvaluationInput.question.sourceReferences",
+  );
+  assertSelectedKnowledgePointsGrounded(
+    knowledgePoints,
+    input.question.sourceReferences,
     "QuestionEvaluationInput.question.sourceReferences",
   );
   if (input.criteria.length !== EVALUATION_CRITERIA.length) {
@@ -717,22 +725,5 @@ function decodeStructuredOutput(value: unknown): unknown {
     return JSON.parse(value) as unknown;
   } catch {
     throw new ContractValidationError("Structured output is not valid JSON");
-  }
-}
-
-function isNonEmpty(value: string): boolean {
-  return value.trim().length > 0;
-}
-
-function isHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return (
-      (url.protocol === "https:" || url.protocol === "http:") &&
-      url.username.length === 0 &&
-      url.password.length === 0
-    );
-  } catch {
-    return false;
   }
 }

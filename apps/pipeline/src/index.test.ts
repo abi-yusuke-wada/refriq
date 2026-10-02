@@ -5,7 +5,9 @@ import {
   PIPELINE_STAGES,
   resumeQuestionPipeline,
   runQuestionPipeline,
+  validateQuestionEvaluationInput,
   type PipelineStage,
+  type QuestionEvaluationInput,
   type QuestionPipelineInput,
 } from "@refriq/application";
 import {
@@ -478,6 +480,79 @@ describe("Question Pipeline Stage contracts", () => {
     expect(run.stages.QUESTION_GENERATION.status).toBe("PENDING");
   });
 
+  it.each([false, true])(
+    "Question Generation requires grounding for every selected KnowledgePoint (complete: %s)",
+    async (complete) => {
+      const baseInput = makePipelineInput();
+      const secondReference = {
+        ...sourceReference,
+        locator: "section:second-synthetic-concept",
+      };
+      const input: QuestionPipelineInput = {
+        ...baseInput,
+        groundingSegments: [
+          ...baseInput.groundingSegments,
+          {
+            ...secondReference,
+            text: "A separate fictional statement supports the second concept.",
+          },
+        ],
+      };
+      const extraction = structuredClone(knowledgeExtractionValid);
+      const firstPoint = extraction.knowledgePoints[0];
+      if (!firstPoint) throw new Error("Synthetic KnowledgePoint is required");
+      extraction.knowledgePoints.push({
+        ...firstPoint,
+        title: "A second fictional concept",
+        sourceReferences: [secondReference],
+      });
+      const planning = structuredClone(questionPlanningValid);
+      planning.questionIntent.knowledgePointCandidateIds.push(
+        `${pipelineRunId}:knowledge:2`,
+      );
+      planning.questionIntent.sourceReferences.push(secondReference);
+      const generation = structuredClone(questionGenerationValid);
+      if (complete) generation.question.sourceReferences.push(secondReference);
+      const provider = new FixtureFakeLlmProvider({
+        KNOWLEDGE_EXTRACTION: [extraction],
+        QUESTION_PLANNING: [planning],
+        QUESTION_GENERATION: [generation],
+        QUESTION_EVALUATION: [fixture("question-evaluation/pass.json")],
+      });
+
+      const run = await runQuestionPipeline(input, provider, { pipelineRunId });
+
+      if (!complete) {
+        expect(run.failedStage).toBe("QUESTION_GENERATION");
+        expect(run.stages.QUESTION_GENERATION.failure?.code).toBe(
+          "OUTPUT_VALIDATION_FAILED",
+        );
+        expect(run.stages.QUESTION_EVALUATION.status).toBe("PENDING");
+        expect(run.artifacts.questionRevisionCandidate).toBeUndefined();
+        return;
+      }
+
+      expect(run.status).toBe("SUCCEEDED");
+      expect(run.artifacts.question?.sourceReferences).toEqual([
+        sourceReference,
+        secondReference,
+      ]);
+      const evaluationRequest = stage(provider, "QUESTION_EVALUATION");
+      if (!evaluationRequest) throw new Error("Evaluation request is required");
+      const evaluationInput =
+        evaluationRequest.input as QuestionEvaluationInput;
+      expect(() =>
+        validateQuestionEvaluationInput({
+          ...evaluationInput,
+          question: {
+            ...evaluationInput.question,
+            sourceReferences: [sourceReference],
+          },
+        }),
+      ).toThrow("every selected KnowledgePoint");
+    },
+  );
+
   it.each([
     ["snapshot", "sourceKindAtUse"],
     ["snapshot", "sourceMetadataSnapshot"],
@@ -660,6 +735,94 @@ describe("Question Pipeline Stage contracts", () => {
   });
 
   it.each([
+    ["sourceUrlAtRetrieval", "https://unlisted.example.test/gateway/routes"],
+    ["sourceUrlAtRetrieval", "https://docs.example.test/gateway-copy/routes"],
+    ["sourceKindAtUse", "COMMUNITY_ARTICLE"],
+    ["matchedAllowRuleSnapshot", undefined],
+  ] as const)(
+    "rejects a SourceRevision inconsistent with its historical allowlist (%s: %s)",
+    async (field, value) => {
+      const input = structuredClone(makePipelineInput());
+      Object.assign(input.sourceRevision.snapshot, { [field]: value });
+      const provider = providerWith();
+
+      const run = await runQuestionPipeline(input, provider, { pipelineRunId });
+
+      expect(run.failedStage).toBe("KNOWLEDGE_EXTRACTION");
+      expect(run.stages.KNOWLEDGE_EXTRACTION.failure?.code).toBe(
+        "SOURCE_POLICY_BLOCKED",
+      );
+      expect(run.stages.KNOWLEDGE_EXTRACTION.failure?.message).toContain(
+        "SOURCE_NOT_ALLOWLISTED",
+      );
+      expect(provider.requests).toHaveLength(0);
+    },
+  );
+
+  it("validates the retrieval URL against the historical rule after the Source URL moves", async () => {
+    const input = makePipelineInput();
+    const currentDecision = evaluateSourcePolicy(
+      {
+        ...sourceCandidate,
+        sourceUrl: "https://new-docs.example.test/gateway/routes",
+      },
+      [{ ...allowedSource, hostname: "new-docs.example.test" }],
+      {
+        sourcePolicyDecisionId: "synthetic-policy-after-url-move",
+        evaluatedAt: "2026-09-24T00:05:00.000Z",
+      },
+    );
+    expect(currentDecision.classification).toBe("TRUSTED");
+
+    const run = await runQuestionPipeline(
+      {
+        ...input,
+        sourceRevision: {
+          ...input.sourceRevision,
+          policyDecision: currentDecision,
+        },
+      },
+      providerWith(),
+      { pipelineRunId },
+    );
+
+    expect(run.status).toBe("SUCCEEDED");
+    expect(run.artifacts.questionRevisionCandidate?.sourceRevision).toEqual(
+      input.sourceRevision.snapshot,
+    );
+  });
+
+  it.each([
+    ["stem", "   "],
+    ["option", "\n"],
+    ["explanation", "\t"],
+    ["optionExplanation", "\u3000"],
+  ] as const)("rejects whitespace-only generated %s", async (field, text) => {
+    const generation = structuredClone(questionGenerationValid);
+    if (field === "stem" || field === "explanation") {
+      generation.question[field] = text;
+    } else if (field === "optionExplanation") {
+      generation.question.optionExplanations.A = text;
+    } else {
+      const option = generation.question.options[0];
+      if (!option) throw new Error("Synthetic option is required");
+      option.text = text;
+    }
+    const provider = providerWith(undefined, generation);
+
+    const run = await runQuestionPipeline(makePipelineInput(), provider, {
+      pipelineRunId,
+    });
+
+    expect(run.failedStage).toBe("QUESTION_GENERATION");
+    expect(run.stages.QUESTION_GENERATION.failure?.code).toBe(
+      "OUTPUT_VALIDATION_FAILED",
+    );
+    expect(run.stages.QUESTION_EVALUATION.status).toBe("PENDING");
+    expect(run.artifacts.questionRevisionCandidate).toBeUndefined();
+  });
+
+  it.each([
     ["REVISE", "revise", "REVISION_REQUIRED"],
     ["REJECT", "reject", "REJECTED_BY_EVALUATION"],
   ] as const)(
@@ -817,6 +980,78 @@ describe("Question Pipeline Stage contracts", () => {
       "SOURCE_POLICY_BLOCKED",
     );
     expect(fakeProvider.requests).toHaveLength(requestCountBeforeResume);
+    expect(resumedRun.immutableInputFingerprint).toBe(
+      failedRun.immutableInputFingerprint,
+    );
+
+    const restoredRun = await resumeQuestionPipeline(
+      input,
+      resumedRun,
+      fakeProvider,
+    );
+    expect(restoredRun.status).toBe("SUCCEEDED");
+    expect(restoredRun.stages.QUESTION_GENERATION.attempt).toBe(1);
+    expect(restoredRun.stages.QUESTION_EVALUATION.attempt).toBe(3);
+  });
+
+  it("can resume with corrected input after an input validation failure without losing input identity", async () => {
+    const input = makePipelineInput();
+    const provider = new FixtureFakeLlmProvider({
+      KNOWLEDGE_EXTRACTION: [fixture("knowledge-extraction/valid.json")],
+      QUESTION_PLANNING: [
+        new Error("synthetic transient provider failure"),
+        fixture("question-planning/valid.json"),
+      ],
+      QUESTION_GENERATION: [
+        fixture("question-generation/valid-single-choice.json"),
+      ],
+      QUESTION_EVALUATION: [fixture("question-evaluation/pass.json")],
+    });
+    const failedRun = await runQuestionPipeline(input, provider, {
+      pipelineRunId,
+    });
+    expect(failedRun.failedStage).toBe("QUESTION_PLANNING");
+    const invalidRun = await resumeQuestionPipeline(
+      { ...input, groundingSegments: [] },
+      failedRun,
+      provider,
+    );
+    expect(invalidRun.stages.QUESTION_PLANNING.failure?.code).toBe(
+      "INPUT_VALIDATION_FAILED",
+    );
+    expect(invalidRun.immutableInputFingerprint).toBe(
+      failedRun.immutableInputFingerprint,
+    );
+    await expect(
+      resumeQuestionPipeline(
+        {
+          ...input,
+          groundingSegments: input.groundingSegments.map((segment) => ({
+            ...segment,
+            text: "Different fictional grounding content.",
+          })),
+        },
+        invalidRun,
+        provider,
+      ),
+    ).rejects.toThrow(PipelineResumeInputMismatchError);
+
+    const restoredRun = await resumeQuestionPipeline(
+      input,
+      invalidRun,
+      provider,
+    );
+    expect(restoredRun.status).toBe("SUCCEEDED");
+    expect(restoredRun.artifacts.knowledgePoints).toEqual(
+      failedRun.artifacts.knowledgePoints,
+    );
+    expect(restoredRun.stages.KNOWLEDGE_EXTRACTION.attempt).toBe(1);
+    expect(restoredRun.stages.QUESTION_PLANNING.attempt).toBe(3);
+    expect(
+      provider.requests.filter(
+        (request) => request.stage === "KNOWLEDGE_EXTRACTION",
+      ),
+    ).toHaveLength(1);
   });
 
   it("Evaluation decision must agree with the deterministic criterion summary", async () => {
