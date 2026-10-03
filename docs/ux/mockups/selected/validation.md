@@ -4,7 +4,7 @@
 
 **Layout CはHuman最終承認済み。learner-ui.mdへLearner UX Contractを確定反映済み。**
 
-現在は12画面・必要状態の展開、初回UXレビュー7件・再レビュー4件・最終レビューMinor 2件の反映を完了し、同じ178ケースを最終Minor修正後と最終承認の表示更新後にも再実行済み。詳細は末尾の最終レビューMinor記録とHuman最終承認記録を参照する。
+現在は12画面・必要状態の展開、初回UXレビュー7件・再レビュー4件・最終レビューMinor 2件・PR独立レビュー2件の反映を完了した。最新のブラウザ確認は既存178ケースとPR指摘の追加26ケース、合計204ケース。詳細は各レビュー記録とPR独立レビュー対応の記録を参照する。
 
 ## Human Decision
 
@@ -107,7 +107,7 @@ Static filesは設計成果物であり、Productionの認証・アクセス制�
 
 - 選択変更はブラウザ内の表示状態に反映し、失敗・Retryや問題移動で保持する。URLにはUser自身の選択と表示用状態だけを引き継ぐ。localStorage / IndexedDBは使わない。
 - 保存・採点は実行しない。成功例の解説・結果は固定Fixtureを表示するため、自由に選び直した回答に応じて判定・scoreを計算しない。レビュー欄にこの制約を明示する。
-- 演習保存中・保存失敗では編集・再確定・次問移動を止め、保存失敗のRetryは同じ選択を保持する。
+- 演習保存中・保存失敗では編集・再確定・次問移動を止め、保存失敗のRetryは同じ選択を保持する。「前の確定済み回答を確認」も保存成功まで無効にし、理由を表示する。通常時と保存成功後の前問確認は維持する。
 - 保存成功後の結果取得失敗では確定済み状態を維持し、結果取得だけRetryする。回答を再保存しない。
 - 模試途中保存中・失敗中は編集・問題移動を可能にする。古い保存成功の表示例でも最新回答は未保存のままで、最終提出を無効にする。
 - 模試最終提出では未回答確認を挟む。保存中・失敗中は編集・問題移動を止め、失敗時は未提出のまま同じ提出をRetryする。
@@ -123,6 +123,8 @@ Static filesは設計成果物であり、Productionの認証・アクセス制�
 - Empty / Fetch Errorの内部名・正常Emptyと失敗の実装上の違いはレビュー欄で確認する。Product本文は学習履歴なしと開始案内、または読込み失敗と再取得案内だけを表示する。
 
 このURL上の状態はStatic Mockを確認するための表示方法であり、API Payload・Persistence・Concurrency実装の仕様ではない。
+
+全問正解の固定結果は、同じ回の結果・分野別詳細・再取得・結果への復帰で同じFixtureを使う。`resultVariant`はこの表示例を保持するレビュー用URL情報であり、別モード・別の結果・次の学習には引き継がない。「通常」へのレビュー切替では通常結果に戻す。
 
 ## Wireflow確認
 
@@ -315,6 +317,21 @@ Plan §5.4 / §5.5とlearner-ui.mdは「その保存要求に含まれる回答�
 Humanが採用CのMockを残す方針を承認した。CのHTML / CSS / JS / Fixture一式、A/B/C比較、採用・検証記録、画面フロー、PNG Snapshot 28枚、承認済みPlan、UX Contract、既存ADRを保持する。
 
 内容が重複する配布用PDF・ZIPはRepository外にbaseline copyを保護したうえで除去した。上記Validation・レビュー履歴に記載したPDF・ZIPの作成は各時点の実施記録であり、現在のPR成果物には含めない。Review資料の参照はPNG・Static Mock・文書へ揃え、manifestの番号はSnapshot番号として管理する。Mockの実装とUX Contractは変更していない。
+
+## Human承認済みPR独立レビュー2件の対応
+
+[PR #27の独立レビュー](https://github.com/abi-yusuke-wada/refriq/pull/27#issuecomment-5973937672)のMajor 1件・Minor 1件をHumanが全件承認した。Layout Cの構造、既存UX Contract、Fixture内容、Production対象外の境界を維持して修正した。
+
+| No. | 修正内容 | 実ブラウザでの確認 |
+| --- | --- | --- |
+| 1 | 演習保存中・保存失敗では前問の解説確認を無効にし、保存成功を待つ理由を表示。前問を経由して元の問題の保存ロックを解除する経路を閉じた | Aを選択して保存中・失敗へ進み、前問確認が遷移不可、入力・再確定が停止、同じAのRetryと回答前Data Boundaryを維持。通常時は前問→Nextが可能、保存成功・結果取得失敗後は前問から戻っても確定回答を再編集できない |
+| 2 | 全問正解の結果Fixtureを画面状態と分離して保持し、同じ回の分野別詳細・再取得・結果復帰で同じ結果を表示 | 演習・模試の既存/新規と4履歴、計8結果で100%・同じSnapshot・分野別100%を往復後も維持。結果と分野別詳細のFetch Error→Retry→Loading→成功も維持。通常結果への切替、別モード・次の学習・学習進捗への移動では全問正解例を持ち越さない |
+
+- 既存回帰128ケース、初回レビュー操作27ケース、再レビュー操作23ケースを再実行し、PR指摘の追加26ケースと合わせて**204ケース成功**。HTTP通信・JavaScript page errorは0件。ブラウザ検証用harness・JSONはRepository外の`/tmp/refriq-issue9-browser/`で管理する。
+- 追加ケースは`selected-pr-review-fixes.cjs`で実際のDOM・リンク・disabled・選択回答・読込みscript・結果Fixture・分野別表を確認した。正答率の表示だけでなく同じSnapshotとFixtureを使用することを照合する。
+- `make check`成功。Format・Lint・Typecheck・既存テスト68件・Nixチェックを確認。`git diff --check`も成功。Production code・Runtime dependency・API・DB・Domainへの変更なし。
+- Review PNG 28枚を現行Mockから再撮影し、manifestの画像・Mock SHA-256を更新。保存失敗Snapshotでは前問確認の無効状態と理由を確認できる。画像は仕様の正本ではない。
+- Layout CのHuman最終採用とLearner UX Contractの確定状態を維持する。実保存・実採点・実非同期応答は今回も実装しない。
 
 ## Handoff / 未決事項
 

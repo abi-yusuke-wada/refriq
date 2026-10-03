@@ -179,6 +179,10 @@
       : mode === "mock"
         ? "currentMock"
         : "currentPractice";
+  const resultVariant =
+    state === "all-correct" || params.get("resultVariant") === "all-correct"
+      ? "all-correct"
+      : "normal";
   let fixture;
   if (
     ["practice", "mock"].includes(screen) ||
@@ -199,7 +203,7 @@
     fixture === "answer-after"
       ? `answer-after/${mode}-${String(qNumber).padStart(2, "0")}`
       : fixture === "result-after"
-        ? `result-after/${resultKey}${params.get("session") === "new" && resultKey.startsWith("current") ? "-new" : ""}${state === "all-correct" ? "-all-correct" : ""}`
+        ? `result-after/${resultKey}${params.get("session") === "new" && resultKey.startsWith("current") ? "-new" : ""}${resultVariant === "all-correct" ? "-all-correct" : ""}`
         : fixture;
   let drafts = {};
   try {
@@ -291,6 +295,27 @@
       result: resultKey,
       ...extras,
     });
+    const sameResult =
+      (extras.mode || mode) === mode &&
+      (extras.result || resultKey) === resultKey;
+    const resultView =
+      ["result", "incorrect", "incorrect-detail"].includes(nextScreen) ||
+      (nextScreen === "topics" &&
+        (extras.scope || params.get("scope")) === "session");
+    if (nextScreen === "topics" && !Object.hasOwn(extras, "scope"))
+      query.set("scope", params.get("scope") || "cumulative");
+    if (
+      sameResult &&
+      resultView &&
+      (extras.resultVariant || resultVariant) === "all-correct"
+    ) {
+      query.set("resultVariant", "all-correct");
+      if (
+        nextScreen === "result" &&
+        (!extras.state || extras.state === "normal")
+      )
+        query.set("state", "all-correct");
+    }
     if (["practice", "mock", "explanation"].includes(nextScreen)) {
       if (!Object.hasOwn(extras, "q")) query.set("q", String(qNumber));
       if (Object.keys(drafts).length && !Object.hasOwn(extras, "draft"))
@@ -783,6 +808,14 @@
         support: rail(currentSession, q),
       };
     const selected = userAnswers(q);
+    const previousPracticeAnswer =
+      mode === "practice" && q.order > 1
+        ? ["save-in-progress", "save-failed"].includes(state)
+          ? '<button class="button" type="button" disabled aria-describedby="previous-answer-blocked">前の確定済み回答を確認</button><span id="previous-answer-blocked" class="small muted">保存成功後に確認できます。</span>'
+          : link("前の確定済み回答を確認", "explanation", false, {
+              q: q.order - 1,
+            })
+        : "";
     const submitted =
       mode === "mock" && ["submitted", "result-fetch-failed"].includes(state);
     let actions;
@@ -808,7 +841,7 @@
       main:
         writeNotice() +
         primary +
-        `<div class="button-row">${submitted ? "" : `<button class="button" id="pause-session" type="button"${busy ? " disabled" : ""}>学習を中断してホームへ</button>`}${mode === "practice" && q.order > 1 ? link("前の確定済み回答を確認", "explanation", false, { q: q.order - 1 }) : ""}${mode === "mock" && !locked ? '<button class="button" id="clear-answer" type="button">この問題を未回答にする</button>' : ""}</div>`,
+        `<div class="button-row">${submitted ? "" : `<button class="button" id="pause-session" type="button"${busy ? " disabled" : ""}>学習を中断してホームへ</button>`}${previousPracticeAnswer}${mode === "mock" && !locked ? '<button class="button" id="clear-answer" type="button">この問題を未回答にする</button>' : ""}</div>`,
       support: rail(currentSession, q, submitted),
     };
   }
@@ -1143,7 +1176,13 @@
       location.href = url(e.target.value, { state: "normal" });
     });
     document.getElementById("state-picker").addEventListener("change", (e) => {
-      location.href = url(screen, { state: e.target.value });
+      location.href = url(screen, {
+        state: e.target.value,
+        ...(screen === "result" &&
+        ["normal", "all-correct"].includes(e.target.value)
+          ? { resultVariant: e.target.value }
+          : {}),
+      });
     });
     document.getElementById("mode-picker")?.addEventListener("change", (e) => {
       location.href = url(screen, { mode: e.target.value, state: "normal" });

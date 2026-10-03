@@ -107,7 +107,7 @@ Semantic ColorはBrand Colorから分離する。正解・保存成功はSuccess
 
 ### 採用確定のValidation根拠
 
-12画面をPC幅1280px / 1440pxで確認し、長い日本語・設定例、Single / Multiple Select、解説・Source、Navigation、一覧・集計、Loading / Empty / Errorを検証した。最新のブラウザ回帰は178ケース（128 + 27 + 23）成功、HTTP通信・page errorは0件。レビュー7件・再レビュー4件・Minor 2件を反映し、確認範囲でMajor / Criticalは見つかっていない。
+12画面をPC幅1280px / 1440pxで確認し、長い日本語・設定例、Single / Multiple Select、解説・Source、Navigation、一覧・集計、Loading / Empty / Errorを検証した。最新のブラウザ回帰は204ケース（既存178 + PR指摘の追加26）成功、HTTP通信・page errorは0件。レビュー7件・再レビュー4件・Minor 2件に加え、Humanが承認したPR独立レビュー2件を反映した。演習保存中・失敗時の前問経由のロック解除と、全問正解結果の詳細往復でのFixture切替を修正・再確認済み。
 
 使用する文字・背景11組のContrastは4.5:1以上、focusは3px、模試Navigationのセルは44px以上を確認している。正式なAccessibility certificationではない。回答前 / 回答後Fixtureの物理分離と読込み境界を維持する。
 

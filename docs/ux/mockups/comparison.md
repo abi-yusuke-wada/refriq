@@ -2,9 +2,9 @@
 
 対象: [Issue #9](https://github.com/abi-yusuke-wada/refriq/issues/9)。実行のTask Contractは[承認済みPlan](../issue-9-plan.md)、Behavior Contractは[learner-ui.md](../learner-ui.md)を参照する。
 
-**現在の状態: HumanがLayout Cを最終採用。初回UXレビュー7件・再レビュー4件・最終レビューMinor 2件を反映済み。12画面・必要状態の展開と再Validationは完了。learner-ui.mdへLearner UX Contractを確定反映済み。**
+**現在の状態: HumanがLayout Cを最終採用。初回UXレビュー7件・再レビュー4件・最終レビューMinor 2件・PR独立レビュー2件を反映済み。12画面・必要状態の展開と再Validationは完了。learner-ui.mdへLearner UX Contractを確定反映済み。**
 
-最新の実ブラウザ確認は178ケース（既存回帰128、初回7件の操作回帰27、再レビュー4件の操作回帰23）。Minor修正後とHuman最終承認の表示更新後にも同じ178ケースを再実行済み。結果は[Validation記録](selected/validation.md)を参照する。
+最新の実ブラウザ確認は204ケース（既存回帰128、初回7件の操作回帰27、再レビュー4件の操作回帰23、PR指摘の追加26）。PR指摘の保存ロック・全問正解結果の詳細往復を修正し、既存178ケースも再実行済み。結果は[Validation記録](selected/validation.md)を参照する。
 
 ## 閲覧方法
 
@@ -187,3 +187,9 @@ PC表示24、Question状態12、読取状態27の計63ケースを確認対象�
 | 2 | 比較記録冒頭の現在状態 | 7件・4件・Minor 2件の反映、12画面展開・再Validation完了、Human最終判断待ちを明示 |
 
 同じ178ケースを再実行し、未回答問題と保存成功後の新文言を既存ケース内で追加確認した。保存状態の意味、aria-live、問題セルの状態・aria-label、全画面・操作・Data Boundaryの回帰を確認済み。**C最終採用とlearner-ui.md最終確定は未実施。**
+
+## Human承認済みPR独立レビュー2件の反映
+
+[PR #27の独立レビュー](https://github.com/abi-yusuke-wada/refriq/pull/27#issuecomment-5973937672)のMajor 1件・Minor 1件をHumanが全件承認した。演習の保存中・保存失敗では前問確認を無効にして保存ロックを維持し、全問正解の結果は同じ回の分野別詳細・再取得・結果復帰で同じFixtureを保持する。Layout Cの構造・採用状態・既存UX Contractは変更しない。
+
+既存178ケースと追加26ケース、合計204ケースを再確認した。保存成功後の前問確認、通常結果へのレビュー切替、別モード・次の学習、回答前Data Boundaryも維持する。詳細は[Validation記録](selected/validation.md)を参照する。
