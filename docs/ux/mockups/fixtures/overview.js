@@ -1,0 +1,51 @@
+window.refriqOverview = {
+  certification: "Kong Gateway Certified Associate",
+  greeting: "今日も、ひとつ理解を深めよう。",
+  availableQuestions: 32,
+  practice: { correct: 38, total: 52, percentage: 73, sessions: 5 },
+  mock: { correct: 31, total: 40, percentage: 78, sessions: 2 },
+  active: [
+    { mode: "演習", position: 3, total: 10, text: "2問の回答を確定済み" },
+    { mode: "模擬試験", position: 3, total: 20, text: "途中保存済み・未提出" },
+  ],
+  topics: [
+    { name: "基本概念・リクエストの流れ", practice: 83, mock: 80, count: 12 },
+    { name: "構成・主要エンティティ", practice: 67, mock: 75, count: 15 },
+    { name: "トラフィックの振り分け", practice: 60, mock: 67, count: 10 },
+    { name: "セキュリティ・アクセス制御", practice: 80, mock: 75, count: 10 },
+    { name: "API設計・OpenAPI", practice: null, mock: null, count: 0 },
+    { name: "導入・運用・バージョン管理", practice: 75, mock: 75, count: 4 },
+    { name: "プラグイン・可観測性", practice: 67, mock: 83, count: 6 },
+    { name: "トラブルシューティング", practice: 50, mock: 67, count: 6 },
+  ],
+  history: [
+    {
+      date: "10月2日 19:42",
+      mode: "演習",
+      summary: "8 / 10問",
+      rate: "80%",
+      state: "完了",
+    },
+    {
+      date: "10月1日 20:10",
+      mode: "模擬試験",
+      summary: "17 / 20問",
+      rate: "85%",
+      state: "提出済み",
+    },
+    {
+      date: "9月30日 18:35",
+      mode: "演習",
+      summary: "7 / 10問",
+      rate: "70%",
+      state: "完了",
+    },
+    {
+      date: "9月28日 21:15",
+      mode: "模擬試験",
+      summary: "14 / 20問",
+      rate: "70%",
+      state: "提出済み",
+    },
+  ],
+};
