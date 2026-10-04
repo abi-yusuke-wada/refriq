@@ -1,4 +1,5 @@
 import type {
+  HumanQuestionReview,
   QuestionSource,
   SourcePolicyDecision,
   SourceRevisionPolicySnapshot,
@@ -45,6 +46,30 @@ export interface QuestionRevisionDocument {
   readonly questionSources: readonly QuestionSource[];
 }
 
+/** Evaluation本文はArtifactStoreから取得し、Human Reviewと区別する。 */
+export interface QuestionRevisionEvaluationReference {
+  readonly questionRevisionId: string;
+  readonly evaluationId: string;
+  readonly pipelineRunId: string;
+  readonly contentChecksum: ArtifactReference["checksum"];
+  readonly artifact: ArtifactReference;
+}
+
+/** 不変Contentと可変Stateを組み合わせたReviewer向け読取Projection。 */
+export interface QuestionRevisionReviewDetail {
+  readonly revision: QuestionRevisionDocument;
+  readonly status:
+    | "DRAFT"
+    | "REVIEW_REQUIRED"
+    | "PUBLISHED"
+    | "CHANGES_REQUESTED"
+    | "REJECTED";
+  readonly questionVersion: number;
+  readonly revisionVersion: number;
+  readonly review: HumanQuestionReview | null;
+  readonly evaluations: readonly QuestionRevisionEvaluationReference[];
+}
+
 export type ReviewTarget =
   | {
       readonly kind: "CANDIDATE";
@@ -54,8 +79,7 @@ export type ReviewTarget =
     }
   | {
       readonly kind: "QUESTION_REVISION";
-      readonly revision: QuestionRevisionDocument;
-      readonly version: number;
+      readonly detail: QuestionRevisionReviewDetail;
     };
 
 /** Human判断APIはCandidate Targetを受け取らない。 */
@@ -125,6 +149,24 @@ export interface LearningSessionDocument {
 export interface AnswerSelection {
   readonly ordinal: number;
   readonly selectedOptionIds: readonly string[];
+}
+
+/** 保存成功した全Mock Draft集合。未保存のClient編集を含めない。 */
+export interface SavedMockDrafts {
+  readonly selections: readonly AnswerSelection[];
+  readonly savedVersion: number;
+  readonly draftDigest: string;
+}
+
+/**
+ * 同じ論理読取Snapshotに属するSession・確定回答・保存済みDraftを返す。
+ * PracticeのDraft、および一度も保存していないMockのDraftはnull。
+ * 未提出Mockのanswersは空で、採点結果を含めない。
+ */
+export interface LearningSessionResume {
+  readonly session: LearningSessionDocument;
+  readonly answers: readonly ConfirmedUserAnswer[];
+  readonly savedMockDrafts: SavedMockDrafts | null;
 }
 
 /** 未回答のRecordを作らない。Revision identityはSession Snapshotから復元する。 */

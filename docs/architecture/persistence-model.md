@@ -38,7 +38,7 @@ Query / Commandの並び順、filter、cursor、失敗、鮮度、排他の正�
 | I11-02 | Source Revision取得 | Content `SOURCE_REVISION#id / META`、原文 / normalized参照 | SourceRepository、Schemaあり |
 | I11-03 | Pipeline待ち状態取得 | Pipeline StageのGSI-Work。dueAtを持つPENDING / retry可能FAILED候補 | PipelineRunRepository、Index定義あり。待ち / retry契約は未確定 |
 | I11-04 | Review Queue取得 | Question GSI-Review、CANDIDATE / QUESTION_REVISION別投影 | QuestionRepository、種別Schemaあり |
-| I11-05 | Question Revision詳細取得 | Question exact CONTENT / STATE / REVIEW / EVAL、Source exact参照 | QuestionRepository / SourceRepository、Schemaあり |
+| I11-05 | Question Revision詳細取得 | Question exact CONTENT / STATE / REVIEW / EVAL、Source exact参照 | QuestionRepository.getReviewDetail / SourceRepository。Reviewer詳細DTOは両version・Review・Evaluation参照を持つ。不変Content読取はgetRevision |
 | I11-06 | Revision差分取得 | 固定2 Revisionの全文取得。差分だけを正本にしない | exact読取Portあり。差分algorithm / CacheはU06 |
 | I11-07 | Approve / Reject / Edit | RevisionのReview slot、State、head、Policy条件、receipt | commitHumanDecision / PipelineRunRepository。REQUEST_CHANGESの正式AP明示は追跡中 |
 | I11-08 | Published Question取得 | 公開pointerを持つheadだけGSI-Published。exact本Table再検査 | QuestionRepository、Index定義あり。公開集合の鮮度はU02 |
@@ -78,6 +78,7 @@ GSI-PublishedはQuestion head、GSI-ReviewはReview Target、GSI-Workは待機�
 - Human Reviewは`QUESTION_REVISION`だけ。`assertHumanReviewTarget`で確認したIDとreview.questionRevisionIdの一致を検査する。Candidateからのmaterialization対応を保存するPortはHuman確認済みTargetを返さず、対応記録だけを返す。
 - `APPROVE / REQUEST_CHANGES / REJECT`はexact Revisionへ固定。APPROVEでは既存Domain Gate、現在Policyの期待version / decision ID、Review slot非存在を検査し、Review / State / 公開head / Queue更新 / receiptを同一DynamoDB Transactionでcommitする契約。Review単独の書込Portは作らない。
 - Candidate C1の表示だけで無関係なRevision R2へcommitしない。materialization後のRevision原本取得・Human確認はApplication / Reviewerの責務。Candidate Evaluation PASSはHuman APPROVEでもPublishでもない。
+- `getReviewDetail`はexact Content、Lifecycle、最大1 Human Review、Evaluation参照、QuestionとRevision Stateそれぞれのversionを同じ論理読取Snapshotで返す。Revision種別のReviewTargetもこの詳細DTOを使う。commitのexpectedQuestionVersion / expectedRevisionVersionを1つのversionへ混同せず、両方を再検査する。Evaluation本文はArtifactStore経由で検証して読む。実DBの一貫した読取・条件commitはAdapter実装時の検証対象。
 - Schema / Port / 対象照合だけでは実DBの原子性を保証しない。Adapter実装時に条件更新と同時commitを実測する。現在Policyの期待条件は用途別に重複除去する。
 - DynamoDBのTransaction上限を超えるSource集合は部分Publishしない。action数とサイズをAdapter前の実行計画で検査する。([AWS Transaction仕様](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html))
 
@@ -106,6 +107,8 @@ PROHIBITED Source本文やValidation失敗のRaw Generated Outputは保存対象
 
 Session startはDynamoDBの公開Revision読取後にTursoへSnapshotを一括保存。回答時は固定Revision読取・採点後にTursoの短いTransactionへ入り、expectedVersion・Draft digestを再検査してAnswer / Session / receiptをcommitする。片Store読取失敗やmissing Revisionで成功保存を推測しない。
 
+`resume`の`LearningSessionResume`は、固定Session / Snapshot、確定回答、保存済みMock Draft集合とそのsavedVersion / draftDigestを同じ論理読取Snapshotで返す。PracticeのDraftと未保存MockのDraftはnullで、未提出Mockの確定回答は空とする。再開後の提出は復元した保存結果のversion / digestを検査し、現在公開Revisionや未保存Client編集から推測しない。これによりC11-01 / C11-03の読取経路をPortで表せる。保存済み集合の復元動作はAdapter未実装のためまだ未検証。
+
 [`rebuildLearningProgress`](../../packages/application/src/persistence/progress.ts)は検証済みSession / Answer事実からの純粋な集計として実装した。User×資格×Modeを分離し、Practiceは確定回答だけ、Mockは提出済みSessionの全固定Snapshotを集計する。同一出題同一Topicは1件、別Sessionの再回答は別件数。同じSession / ordinalの重複入力を拒否し、元の事実を変更しない。Session提出事実の物理表現・Topic固定時点・DB Queryはこの関数で決定しない。
 
 ## 8. TTL・Retention・置換可能性
@@ -129,19 +132,23 @@ PK / SK / GSIと物理配置はpersistence Package内に限定。Application Por
 - Revision / ReviewへのTTL拒否、ordinal順、過大inlineデータ拒否。
 - Domain / Applicationがpersistence Package・DB SDK / Driver型へ依存しないこと。
 
-2026-10-04、main更新後の実行結果:
+2026-10-04、実装レビューの承認済み4指摘を反映後の実行結果:
 
 | 検証 | 結果と確認範囲 |
 | --- | --- |
-| `make fmt` / `make check` | 成功。Formatting、Lint、`pnpm typecheck`、既存2ファイル・68テスト、対応hostのNix checkを確認。新しいTestファイルは追加していない |
-| Item / Schema | 全24種別・35 ItemとS3代替形1件を検証。14の不正例を拒否 |
-| Artifact | 6本文の13参照についてbyteSize / checksum一致を確認。同サイズの改変本文も拒否 |
-| Snapshotの部分DDL | SQLiteメモリDBで8の不正操作を拒否。実回答18件・固定出題20件・未回答2件、exact qr1参照、不変性、FK整合性を確認 |
-| Progressの純粋計算 | Mock 15正解 / 20問、未提出Mockの除外、別Session累積30 / 40、Practice 3 / 3、Topic分母、入力の重複拒否と非変更を確認 |
+| `make fmt` / `make check` | 成功。Formatting、Lint、`pnpm typecheck`、6ファイル・135テスト（既存68件＋追加67件）、対応hostのNix checkを確認 |
+| Portの型契約 | Resumeの回答 / Draft集合・保存版 / digest、Reviewer詳細のReview / Evaluation・両version、Candidateを受けないHuman commandをTypecheckで確認 |
+| Item / Schema | 全24種別・35 ItemとS3代替形1件、必須 / 未知Field・enum・Key / Index・Policy参照・TTL・過大inline・Provenanceの否定例を継続Test化 |
+| 日時Field | Schemaに宣言した日時だけを検査。有効なOption ID `optionCreatedAt` / `retrievedAt`を受理し、不正な実日時・暦日を拒否。Domain日時のoffset表記を保持 |
+| Artifact | 6 manifestの本文についてbyteSize / checksum一致、同サイズ改変・短い本文・不正manifestの拒否を継続Test化 |
+| Snapshotの部分DDL | Node.js標準SQLiteのメモリDBでFK強制を確認。2列FK、存在しないSnapshot、重複Answer、immutable更新、参照中削除、null、20問 / 18回答、公開pointer qr2でもSnapshot qr1を維持する保存形のRegressionを確認 |
+| Progressの純粋計算 | Mock 18 / 20と全未回答0 / 20、未提出Mockの除外、別Session累積36 / 40、Practice 2 / 3、Topic分母、Scope分離、重複・Revision不一致の拒否と入力非変更を確認 |
 | 文書・依存境界 | Markdown Table / fence / JSON断片 / local link / 節・U参照 / AP14行を確認。Domain / ApplicationへのStorage Key・SDK importの漏出なし |
-| `git diff --check` | 成功。未追跡ファイルの末尾空白・最終改行も別途確認 |
+| `git diff --check` | 成功。追加TestファイルはBiomeのFormatting / Lint対象として検証 |
 
-上記のSchema・制約・純粋計算は一時的な検証コマンドで確認し、Repository共通Testの68件とは区別する。実AWS / Tursoへの書込、DynamoDB Transaction、Turso接続でのFK、完成Result / ProgressのSQL、Sessionの再送・競合・片Store障害は未検証。部分DDLの検証はSQLiteのメモリDBと最小の親Keyを使った参照制約の確認に限定し、完成Schema / Turso integrationの成功とは扱わない。Port定義の存在をAdapter動作の検証成功とは扱わない。
+追加TestはApplicationの[型契約](../../packages/application/src/persistence/contracts.test.ts)・[確定事実と対象照合](../../packages/application/src/persistence/progress.test.ts)、Persistenceの[Schema / Artifact](../../packages/persistence/src/validation.test.js)・[Snapshot制約](../../packages/persistence/src/session-snapshot.test.js)の4ファイル。既存Vitest / `make check`へ組み込み、SDK / Driver / Test依存は追加していない。
+
+実AWS / Tursoへの書込、DynamoDB Transaction、Turso接続でのFK、完成Result / ProgressのSQL、Sessionの再送・競合・片Store障害は未検証。部分DDLの検証はSQLiteのメモリDBと最小の親Keyを使った参照制約の確認に限定し、完成Schema / Turso integrationの成功とは扱わない。公開pointer変更のRegressionもFixtureとSQLite保存形の境界確認である。Portの型契約検証をAdapter読取・原子的commit動作の検証成功とは扱わない。
 
 ## 10. 残る判断と完了条件
 

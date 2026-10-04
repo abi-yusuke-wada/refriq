@@ -17,6 +17,7 @@ import type {
   ConfirmedRevisionTarget,
   ConfirmedUserAnswer,
   LearningSessionDocument,
+  LearningSessionResume,
   OperationIdentity,
   Page,
   PageRequest,
@@ -24,6 +25,7 @@ import type {
   ProgressProjection,
   ProgressScope,
   QuestionRevisionDocument,
+  QuestionRevisionReviewDetail,
   RepositoryResult,
   ReviewTarget,
   SessionResult,
@@ -88,6 +90,14 @@ export interface QuestionRepository {
   getRevision(
     questionRevisionId: string,
   ): Promise<RepositoryResult<QuestionRevisionDocument>>;
+  /**
+   * exact Content・State・最大1 Review・Evaluation参照と親 / Stateの両versionを返す。
+   * 同じ論理読取Snapshotから復元し、commitでは両versionを再検査する。
+   * GSI投影のversionやCandidate IDからHuman判断対象を推測しない。
+   */
+  getReviewDetail(
+    questionRevisionId: string,
+  ): Promise<RepositoryResult<QuestionRevisionReviewDetail>>;
   revisions(
     questionId: string,
     page: PageRequest,
@@ -161,10 +171,15 @@ export interface LearningSessionRepository {
   active(
     scope: ProgressScope,
   ): Promise<RepositoryResult<LearningSessionDocument>>;
+  /**
+   * 所有者を照合し、固定Snapshot・確定回答・保存済みDraftを一貫して復元する。
+   * Draft集合のsavedVersion / digestは同じ保存結果の組。Submitはこの組を検査する。
+   * 現在公開Revisionへの再解決・再抽選をしない。
+   */
   resume(
     userId: string,
     sessionId: string,
-  ): Promise<RepositoryResult<LearningSessionDocument>>;
+  ): Promise<RepositoryResult<LearningSessionResume>>;
   /** Mockのみ、未提出のみ。全Draft集合・Session version・receiptの一括commit。 */
   saveMockDrafts(input: {
     readonly operation: OperationIdentity;

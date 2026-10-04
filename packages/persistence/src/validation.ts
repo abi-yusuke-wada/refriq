@@ -1,5 +1,5 @@
 import { Ajv2020 } from "ajv/dist/2020.js";
-import type { ValidateFunction } from "ajv";
+import type { AnySchema, ValidateFunction } from "ajv";
 import {
   validateSourceRevisionPolicySnapshot,
   type SourceRevisionPolicySnapshot,
@@ -53,13 +53,18 @@ function reject(condition: boolean, reason: string): void {
   if (condition) throw new PersistenceValidationError(reason);
 }
 
-function validateTimestamps(value: unknown): void {
-  if (Array.isArray(value)) {
-    value.forEach(validateTimestamps);
+/** Schemaで宣言した日時Fieldのみ検査。自由MapのOption ID等をField名と扱わない。 */
+function validateTimestamps(value: unknown, schema: AnySchema): void {
+  if (typeof schema === "boolean") return;
+  for (const branch of schema.oneOf ?? []) validateTimestamps(value, branch);
+  if (Array.isArray(value) && schema.items && !Array.isArray(schema.items)) {
+    for (const child of value) validateTimestamps(child, schema.items);
     return;
   }
   if (!value || typeof value !== "object") return;
-  for (const [key, child] of Object.entries(value)) {
+  const record = value as Record<string, unknown>;
+  for (const [key, childSchema] of Object.entries(schema.properties ?? {})) {
+    const child = record[key];
     if (
       (key.endsWith("At") || key === "retrievedAt") &&
       typeof child === "string"
@@ -73,13 +78,13 @@ function validateTimestamps(value: unknown): void {
         "Invalid timestamp",
       );
     }
-    validateTimestamps(child);
+    validateTimestamps(child, childSchema as AnySchema);
   }
 }
 
 export function validateArtifactReference(value: unknown): void {
   requireValid(artifactValidator, value);
-  validateTimestamps(value);
+  validateTimestamps(value, artifactReferenceSchema);
 }
 
 /** S3から復元したContentにも、inline保存と同じ構造・参照条件を適用する。 */
@@ -88,7 +93,7 @@ export function validateQuestionRevisionDocument(
 ): QuestionRevisionDocument {
   requireValid(revisionValidator, value);
   const revision = value as QuestionRevisionDocument;
-  validateTimestamps(revision);
+  validateTimestamps(revision, questionRevisionSchema);
   validateRevision(revision);
   return revision;
 }
@@ -175,7 +180,7 @@ export function validateDynamoItem(value: unknown): DynamoItem {
     estimateItemBytes(item) > 400 * 1024,
     "Item exceeds the inline storage budget; use an immutable Artifact reference",
   );
-  validateTimestamps(item.payload);
+  validateTimestamps(item.payload, payloadSchemas[item.kind]);
   const expected = itemAddress(item.kind, item.payload, item.table);
   reject(
     expected.table !== item.table ||

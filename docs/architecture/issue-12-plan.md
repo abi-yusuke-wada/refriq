@@ -119,7 +119,7 @@ Storage分割、Aggregate境界、採用済み3指摘のInvariant、I11-01〜14 
 | I11-02 | Source Revision取得：Pipeline・Reviewer / Q | SourceRevision | SourceRepository | Content + S3 | `SOURCE_REVISION#id / META`をexact取得、body / normalized参照を必要時に解決。履歴は`SOURCE#id / REVISION#ordinal#id`。取得入力・順序は要確認。 |
 | I11-03 | Pipeline待ち状態取得：Pipeline・Reviewer / Q | Run / Stage状態 | PipelineRunRepository | DynamoDB Pipeline | `GSI-Work`の資格×Stage×StatusとdueAt / runId順候補。取得後Headのversion / Statusを再確認。待ちの定義・lease・可視化遅延は要確認。 |
 | I11-04 | Review Queue取得：Reviewer / Q | Candidate / QuestionRevisionの読取投影 | QuestionRepositoryのreview queue読取 | DynamoDB Question + Pipeline | `GSI-Review`資格×review種別、submittedAt / target種別 / targetId順。Read Projectionで`CANDIDATE / QUESTION_REVISION`を区別し、前者は確認・Edit・再評価・materializationへの遷移、後者のみHuman判断。未判断・評価条件・Policy filter、鮮度は要確認。 |
-| I11-05 | Question Revision詳細取得：Reviewer、解禁後Learner / Q | QuestionRevision / QuestionSource / Review / Evaluation | QuestionRepository + SourceRepository | Question + Content + 必要時S3 | `REVISION#id / CONTENT・STATE・REVIEW・EVAL#`。exact IDで取得。ApplicationがGrounding / Source / Knowledgeを組み立て、Learner出力を時点別に制限。 |
+| I11-05 | Question Revision詳細取得：Reviewer、解禁後Learner / Q | QuestionRevision / QuestionSource / Review / Evaluation | QuestionRepository + SourceRepository | Question + Content + 必要時S3 | `REVISION#id / CONTENT・STATE・REVIEW・EVAL#`。Reviewer詳細はexact Content・State・Review・Evaluation参照とQuestion / Revision両versionを取得。Learner用の不変Content読取とは区別し、ApplicationがGrounding / Source / Knowledgeを組み立て、出力を時点別に制限。 |
 | I11-06 | Revision差分取得：Reviewer / Q | SourceRevision / QuestionRevision | SourceRepository / QuestionRepository、Application差分処理 | DynamoDB + S3 | 比較元・先の固定IDで全文Snapshotを2件取得して差分を導出。任意保存は比較ID×algorithm版のArtifact。Source / Question双方か、前Revision選択・差分形式は要確認。 |
 | I11-07 | Approve / Reject / Edit：Reviewer / C | Question / Review、編集Candidate | QuestionRepositoryの判断commit + PipelineRunRepository | Question + Content + Pipeline | Human判断は`QUESTION_REVISION`のexact IDへ固定し、確認対象との一致、Review非存在、Question / State version、現在Policyを検査。Editは別Candidate。原文は維持し、`REQUEST_CHANGES` Commandが正式APで明示されているか要確認。具体Command契約で`APPROVE / REQUEST_CHANGES / REJECT`を漏らさない。 |
 | I11-08 | Published Question取得：Learner / Q | Questionの現在公開参照 | QuestionRepositoryのpublished読取 | DynamoDB Question | `GSI-Published`資格×Question ID、一意Questionのrootのみ。Session選択前にroot / exact Revisionを本Tableで再確認。新規公開のIndex遅延許容は要確認。 |
@@ -138,9 +138,9 @@ Storage分割、Aggregate境界、採用済み3指摘のInvariant、I11-01〜14 
 
 | 候補ID | 根拠となる要求 | #11への追加・詳細化候補 | 永続化へ必要となること |
 | --- | --- | --- | --- |
-| C11-01 | #9 Home / 再開 | Active Session取得、Resume、既存Session終了。User×資格×Modeの最大1件 | Active一意制約、Snapshot / 保存済状態の再取得。 |
+| C11-01 | #9 Home / 再開 | Active Session取得、Resume、既存Session終了。User×資格×Modeの最大1件 | Active一意制約、固定Snapshot / 確定回答 / 保存済みMock Draft集合と対応する保存版・digestを同じ論理読取Snapshotで再取得。未保存MockはDraftなしを明示。 |
 | C11-02 | #9 Mock開始 | Mock Session作成、一意Question数の不足判定、重複なし抽選 | 20問の固定Snapshot。I11-08/09の詳細化候補。 |
-| C11-03 | #9 Mock保存 | 途中保存、選択削除、stale write・stale応答、最終提出の再送 | DraftとAnswer分離、保存版・request対応、提出時条件。 |
+| C11-03 | #9 Mock保存 | 途中保存、選択削除、stale write・stale応答、最終提出の再送 | DraftとAnswer分離、保存版・request対応、提出時条件。Resumeで保存済み選択・version・digestを復元し、未保存Client編集と混同しない。 |
 | C11-04 | #9 History / Progress | 完了Session履歴の時刻順Pagination、exact Revision詳細、Mode別累積進捗 | 確定回答・提出済みSession・固定Snapshot等からの再構築、Session履歴Index、固定分類。 |
 | C11-05 | #6 / #10 Revision履歴 | Questionの全Revision履歴、固定比較元、Review履歴 / 前Revision詳細 | Question単位history manifest、exact Domain Revisionに最大1 Review。Human判断`APPROVE / REQUEST_CHANGES / REJECT`の追跡をI11-07と照合。 |
 | C11-06 | #8 / #10 Candidate接続 | Candidate・Evaluation詳細、KnowledgePoint ID解決、Domain Revision化、編集再評価 | Run内ID→stable ID対応記録、immutable Artifactと適用済み参照。CandidateへHuman判断を保存せず、materialization後にexact Revision Targetを取得・確認して判断する。 |
@@ -420,9 +420,9 @@ DynamoDB / S3読取と採点を済ませてからTursoの短い書込Transaction
 | CertificationCatalog | Certification / Topicの取得 | Domain ID / Catalog DTO。一覧条件は正式APに合わせる。 |
 | SourceRepository | exact Snapshot、現在用途別Policy、Source / Review履歴、Revision追記・現在pointer更新 | 既存`SourceRevisionPolicySnapshot`、`SourcePolicyDecision`、`SourceReviewRecord`を活用する。 |
 | KnowledgePointRepository | stable KnowledgePoint取得、mutable内容・Evidenceの条件更新 | 候補IDとのMappingをDomain IDへ解決した後に使う。 |
-| QuestionRepository | exact Revision / current published / 履歴 / 種別付きreview queue、Revision追加、Human判断とPublishのcommit | Human判断は確認したexact Domain questionRevisionIdへ限定し、Candidate ID・Target Mismatchを受理しない。現在Policyの期待値・versionをStorage非依存の検証tokenとして受ける候補。 |
+| QuestionRepository | exact Revision / current published / 履歴 / 種別付きreview queue、Reviewer詳細、Revision追加、Human判断とPublishのcommit | Reviewer詳細でState・最大1 Review・Evaluation参照とQuestion / Revision両versionを同じ論理読取Snapshotから取得する。Human判断は確認したexact Domain questionRevisionIdへ限定し、Candidate ID・Target Mismatchを受理しない。現在Policyの期待値・versionをStorage非依存の検証tokenとして受ける候補。 |
 | PipelineRunRepository | Run / Stage / Attempt / validated Artifact取得とcheckpoint、Candidate→Domain対応保存 | #8のContractを再利用。CandidateへQuestionReviewを保存しない。失敗Run再開と新Run生成を区別する。 |
-| LearningSessionRepository | start / resume、Mock Draft保存、Practice確定、Mock提出・終了 | User所有者、固定Snapshot、expectedVersion、operationId。Draft / AnswerはSession×ordinalの出題へ結び、Session / Answer / receiptを原子的commitする。 |
+| LearningSessionRepository | start / resume、Mock Draft保存、Practice確定、Mock提出・終了 | User所有者、固定Snapshot、expectedVersion、operationId。Resumeは固定Snapshot・確定回答・保存済みMock Draft集合と対応保存版 / digestを一貫して返す。Draft / AnswerはSession×ordinalの出題へ結び、Session / Answer / receiptを原子的commitする。 |
 | UserAnswerRepository（読取） | 確定Answerのexact取得・履歴材料取得 | `(sessionId, ordinal)`で固定SnapshotからQuestion / exact Revisionを解決してDomain / ApplicationのAnswerを復元。Currentは使わず、無条件append / updateを公開しない。 |
 | LearningResultReader / LearningProgressReader | 確定回答・提出済みSession・固定Snapshot等から結果・累積 / Topic別集計を読取 | 未回答も含む確定事実から再構築するProjection DTO。Storage行を公開しない。materializeが必要なら再構築Portを追加検討する。 |
 | ExamFeedbackRepository | 選択式提出、詳細・一覧・summary | Learner原本とReviewer / Planning向けsummaryを区別。一般FeedbackRepositoryを別に重複作成しない。 |
