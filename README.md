@@ -142,7 +142,7 @@ Feedback
 
 また、既に高品質な外部教材が存在する資格については、自前教材を作成せず、外部教材を案内する方針です。
 
-MVPの対象資格、Scope、完了条件、対象外は [MVP Scope](docs/mvp-scope.md) にまとめています。Domain ConceptとLifecycleは [Domain Model](docs/domain/) に、Sourceの利用判定とProvenanceは [Source Governance](docs/domain/source-governance.md) に、現在のArchitectureは [Architecture Docs](docs/architecture/) に、Architecture Decisionは [ADR](docs/adr/) にまとめています。Repository全体の開発Ruleは [AGENTS.md](AGENTS.md) を参照してください。
+MVPの対象資格、Scope、完了条件、対象外は [MVP Scope](docs/mvp-scope.md) にまとめています。Domain ConceptとLifecycleは [Domain Model](docs/domain/) に、Sourceの利用判定とProvenanceは [Source Governance](docs/domain/source-governance.md) に、Learner画面の操作・状態・必要データは [Learner画面と学習フロー](docs/ux/learner-ui.md) に、現在のArchitectureは [Architecture Docs](docs/architecture/) に、Architecture Decisionは [ADR](docs/adr/) にまとめています。Repository全体の開発Ruleは [AGENTS.md](AGENTS.md) を参照してください。
 
 ## Architecture Principles
 

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Learner UI · レイアウト比較 | refriq</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="comparison.js" defer></script>
+  </head>
+  <body class="comparison-page">
+    <header class="comparison-header">
+      <a class="wordmark" href="index.html">refriq<span>学びを、次の一歩へ。</span></a>
+      <span class="pill">Issue #9 · レイアウト比較</span>
+    </header>
+    <main class="comparison-main">
+      <p class="eyebrow">LEARNER EXPERIENCE / 01</p>
+      <h1>同じ学習体験を、3つの配置で。</h1>
+      <p class="lead">Home・問題回答・結果・学習進捗を見比べてください。選択は全画面検証へ進むための暫定採用です。</p>
+      <div class="review-note">架空Fixtureによるラフな設計比較です。実際の保存・採点・API接続は行いません。各プレビュー内の「PC表示」で実寸を開けます。</div>
+      <div class="comparison-controls">
+        <label>代表画面 <select id="screen-filter"><option value="all">4画面を並べる</option><option value="home">Home</option><option value="question">問題回答</option><option value="result">結果</option><option value="progress">Learning Progress</option></select></label>
+        <label>PC幅 <select id="pc-width"><option value="1280">1280px</option><option value="1440">1440px</option></select></label>
+        <a href="comparison.md">比較記録・評価軸を読む →</a>
+      </div>
+      <div id="comparison-grid" class="comparison-grid"></div>
+      <section class="decision-note">
+        <h2>選択後に、全画面で確かめる。</h2>
+        <p>Cのみを全画面・状態へ展開し、再Validation後にHumanがLayout Cを最終採用しました。Learner UX Contractはlearner-ui.mdへ確定反映済みです。</p>
+        <p><a href="selected/index.html">採用確定Cの12画面Mockを見る →</a></p>
+        <p>比較軸：問題文 / 選択肢 / 解説と出典 / 現在位置 / 履歴・一覧 / Navigation / PC情報密度 / 一貫性</p>
+      </section>
+    </main>
+  </body>
+</html>
