@@ -1,0 +1,23 @@
+{
+  "table": "Question",
+  "PK": "REVISION#synthetic-qr1",
+  "SK": "CONTENT",
+  "kind": "QUESTION_CONTENT",
+  "payload": {
+    "questionId": "synthetic-q1",
+    "questionRevisionId": "synthetic-qr1",
+    "certificationId": "synthetic-cert",
+    "revisionOrdinal": 1,
+    "artifact": {
+      "artifactId": "synthetic-question-content1",
+      "checksum": {
+        "algorithm": "SHA-256",
+        "value": "6eb64f304c8aacc5297b29d8084b1ae7245dae4aba5f22acaa3f77f7a01ce29c"
+      },
+      "contentType": "application/json",
+      "byteSize": 1574,
+      "createdAt": "2026-10-04T00:00:00Z",
+      "schemaVersion": 1
+    }
+  }
+}

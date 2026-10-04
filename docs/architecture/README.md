@@ -8,6 +8,7 @@
 | --- | --- |
 | `apps/pipeline` | PipelineのComposition Root。Applicationの実行関数を公開し、Fake ProviderでStage契約を検証する。 |
 | `packages/application` | Stage契約、JSON Schema検証、Pipeline Orchestration、LLM Structured Output Portを持つ。 |
+| `packages/persistence` | Issue #12の保存Schema、Key / Index定義、Artifact参照検証。DB接続Adapterは未実装。 |
 | `packages/domain` | Source Policy Gate、immutable Revision Snapshot、QuestionSource、Human Review / Publish Gateを持つ。Pipeline OrchestrationやProvider SDKは持たない。 |
 | `packages/contracts` | 外部API Contract用Workspace。Pipeline DTOを先行して複製しない。 |
 | `apps/api`、`apps/web` | Pipeline、Reviewer UI、Learner UIの実装はまだ持たない。 |
@@ -15,6 +16,8 @@
 Application Pipelineは`packages/domain`のSource PolicyとPublish Policyを呼び出す。HTTP Handlerは経由せず、`apps/pipeline`からApplication Use Caseを実行する。
 
 ## 文書の役割
+
+Issue #12の実装済み範囲と判断待ちは[永続化モデル](persistence-model.md)、調査と承認対象は[Plan 1](issue-12-plan.md)を参照する。ApplicationにStorage非依存Repository Portを追加した。
 
 | 文書 | 記載内容 |
 | --- | --- |

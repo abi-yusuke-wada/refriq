@@ -1,0 +1,9 @@
+{
+  "sourceRevisionId": "synthetic-sr1",
+  "segments": [
+    {
+      "locator": "section:route-service",
+      "text": "架空GatewayではRouteがServiceを参照する。実試験問題ではない。"
+    }
+  ]
+}

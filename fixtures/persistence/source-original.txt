@@ -1,0 +1,1 @@
+架空GatewayではRouteがServiceを参照する。実試験問題ではない。

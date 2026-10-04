@@ -1,0 +1,812 @@
+[
+  {
+    "table": "Content",
+    "PK": "CERT#synthetic-cert",
+    "SK": "META",
+    "kind": "CERTIFICATION",
+    "payload": {
+      "certificationId": "synthetic-cert",
+      "name": "架空資格",
+      "status": "ACTIVE"
+    }
+  },
+  {
+    "table": "Content",
+    "PK": "CERT#synthetic-cert",
+    "SK": "TOPIC#synthetic-topic1",
+    "kind": "EXAM_TOPIC",
+    "payload": {
+      "certificationId": "synthetic-cert",
+      "examTopicId": "synthetic-topic1",
+      "name": "架空Routing",
+      "status": "ACTIVE"
+    }
+  },
+  {
+    "table": "Content",
+    "PK": "SOURCE#synthetic-source1",
+    "SK": "META",
+    "kind": "SOURCE_HEAD",
+    "payload": {
+      "sourceDocumentId": "synthetic-source1",
+      "currentLocator": "https://docs.example.test/gateway/routes",
+      "latestRevisionId": "synthetic-sr1",
+      "version": 1
+    }
+  },
+  {
+    "table": "Content",
+    "PK": "SOURCE#synthetic-source1",
+    "SK": "REVISION#0000000000000001#synthetic-sr1",
+    "kind": "SOURCE_HISTORY",
+    "payload": {
+      "sourceDocumentId": "synthetic-source1",
+      "sourceRevisionId": "synthetic-sr1",
+      "revisionOrdinal": 1
+    }
+  },
+  {
+    "table": "Content",
+    "PK": "SOURCE_REVISION#synthetic-sr1",
+    "SK": "META",
+    "kind": "SOURCE_REVISION",
+    "payload": {
+      "snapshot": {
+        "sourceDocumentId": "synthetic-source1",
+        "sourceRevisionId": "synthetic-sr1",
+        "sourceUrlAtRetrieval": "https://docs.example.test/gateway/routes",
+        "retrievedAt": "2026-10-04T00:00:00Z",
+        "contentFingerprint": "synthetic-fingerprint-v1",
+        "classificationAtUse": "TRUSTED",
+        "usagePurposeAtUse": "NORMATIVE_TECHNICAL",
+        "sourceKindAtUse": "OFFICIAL_DOCUMENTATION",
+        "sourcePolicyDecisionId": "synthetic-policy1",
+        "sourceMetadataSnapshot": {
+          "sourceUrl": "https://docs.example.test/gateway/routes",
+          "sourceOwner": "Example Systems",
+          "originStatus": "VERIFIED",
+          "accessClassification": "PUBLIC",
+          "automatedAccess": "ALLOWED",
+          "purposeAlignment": "ALIGNED",
+          "terms": {
+            "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+            "termsUrl": "https://docs.example.test/terms",
+            "checkedAt": "2026-10-04T00:00:00Z",
+            "checkedBy": "synthetic-reviewer"
+          }
+        },
+        "matchedAllowRuleSnapshot": {
+          "id": "synthetic-rule1",
+          "owner": "Example Systems",
+          "hostname": "docs.example.test",
+          "pathPrefix": "/gateway",
+          "allowedKinds": ["OFFICIAL_DOCUMENTATION"],
+          "allowedPurposes": ["NORMATIVE_TECHNICAL"],
+          "notes": "架空Source専用。Production Allowlistではない。"
+        },
+        "termsMetadataSnapshot": {
+          "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+          "termsUrl": "https://docs.example.test/terms",
+          "checkedAt": "2026-10-04T00:00:00Z",
+          "checkedBy": "synthetic-reviewer"
+        }
+      },
+      "originalArtifact": {
+        "artifactId": "synthetic-original1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "ec3578c85a6e74c22e08701a5cc6a25e455d6246150aa7db099a00fd26e53fd2"
+        },
+        "contentType": "text/plain; charset=utf-8",
+        "byteSize": 83,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      },
+      "normalizedArtifact": {
+        "artifactId": "synthetic-normalized1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "1862e58d3670dd9a1d8d7f0a09ed560ff7ec7c3b6d51fe4b81ab2e665159e426"
+        },
+        "contentType": "application/json",
+        "byteSize": 216,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      },
+      "normalizationVersion": "synthetic-v1"
+    }
+  },
+  {
+    "table": "Content",
+    "PK": "SOURCE#synthetic-source1",
+    "SK": "POLICY_CURRENT#NORMATIVE_TECHNICAL",
+    "kind": "POLICY_CURRENT",
+    "payload": {
+      "sourceDocumentId": "synthetic-source1",
+      "usagePurpose": "NORMATIVE_TECHNICAL",
+      "decision": {
+        "sourcePolicyDecisionId": "synthetic-policy1",
+        "sourceDocumentId": "synthetic-source1",
+        "classification": "TRUSTED",
+        "usagePurpose": "NORMATIVE_TECHNICAL",
+        "sourceKind": "OFFICIAL_DOCUMENTATION",
+        "reasonCodes": [],
+        "evaluatedAt": "2026-10-04T00:00:00Z",
+        "matchedAllowRuleId": "synthetic-rule1",
+        "matchedAllowRuleSnapshot": {
+          "id": "synthetic-rule1",
+          "owner": "Example Systems",
+          "hostname": "docs.example.test",
+          "pathPrefix": "/gateway",
+          "allowedKinds": ["OFFICIAL_DOCUMENTATION"],
+          "allowedPurposes": ["NORMATIVE_TECHNICAL"],
+          "notes": "架空Source専用。Production Allowlistではない。"
+        },
+        "sourceMetadataSnapshot": {
+          "sourceUrl": "https://docs.example.test/gateway/routes",
+          "sourceOwner": "Example Systems",
+          "originStatus": "VERIFIED",
+          "accessClassification": "PUBLIC",
+          "automatedAccess": "ALLOWED",
+          "purposeAlignment": "ALIGNED",
+          "terms": {
+            "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+            "termsUrl": "https://docs.example.test/terms",
+            "checkedAt": "2026-10-04T00:00:00Z",
+            "checkedBy": "synthetic-reviewer"
+          }
+        },
+        "termsMetadataSnapshot": {
+          "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+          "termsUrl": "https://docs.example.test/terms",
+          "checkedAt": "2026-10-04T00:00:00Z",
+          "checkedBy": "synthetic-reviewer"
+        }
+      },
+      "version": 1
+    }
+  },
+  {
+    "table": "Content",
+    "PK": "SOURCE#synthetic-source1",
+    "SK": "POLICY#NORMATIVE_TECHNICAL#2026-10-04T00%3A00%3A00.000Z#synthetic-policy1",
+    "kind": "POLICY_HISTORY",
+    "payload": {
+      "sourcePolicyDecisionId": "synthetic-policy1",
+      "sourceDocumentId": "synthetic-source1",
+      "classification": "TRUSTED",
+      "usagePurpose": "NORMATIVE_TECHNICAL",
+      "sourceKind": "OFFICIAL_DOCUMENTATION",
+      "reasonCodes": [],
+      "evaluatedAt": "2026-10-04T00:00:00Z",
+      "matchedAllowRuleId": "synthetic-rule1",
+      "matchedAllowRuleSnapshot": {
+        "id": "synthetic-rule1",
+        "owner": "Example Systems",
+        "hostname": "docs.example.test",
+        "pathPrefix": "/gateway",
+        "allowedKinds": ["OFFICIAL_DOCUMENTATION"],
+        "allowedPurposes": ["NORMATIVE_TECHNICAL"],
+        "notes": "架空Source専用。Production Allowlistではない。"
+      },
+      "sourceMetadataSnapshot": {
+        "sourceUrl": "https://docs.example.test/gateway/routes",
+        "sourceOwner": "Example Systems",
+        "originStatus": "VERIFIED",
+        "accessClassification": "PUBLIC",
+        "automatedAccess": "ALLOWED",
+        "purposeAlignment": "ALIGNED",
+        "terms": {
+          "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+          "termsUrl": "https://docs.example.test/terms",
+          "checkedAt": "2026-10-04T00:00:00Z",
+          "checkedBy": "synthetic-reviewer"
+        }
+      },
+      "termsMetadataSnapshot": {
+        "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+        "termsUrl": "https://docs.example.test/terms",
+        "checkedAt": "2026-10-04T00:00:00Z",
+        "checkedBy": "synthetic-reviewer"
+      }
+    }
+  },
+  {
+    "table": "Content",
+    "PK": "SOURCE#synthetic-source1",
+    "SK": "SOURCE_REVIEW#2026-10-04T00%3A00%3A00.000Z#synthetic-source-review1",
+    "kind": "SOURCE_REVIEW",
+    "payload": {
+      "sourceReviewId": "synthetic-source-review1",
+      "sourceDocumentId": "synthetic-source1",
+      "reviewerId": "synthetic-reviewer",
+      "reviewedAt": "2026-10-04T00:00:00Z",
+      "outcome": "APPROVED_FOR_USE",
+      "approvedPurposes": ["NORMATIVE_TECHNICAL"]
+    }
+  },
+  {
+    "table": "Content",
+    "PK": "KNOWLEDGE#synthetic-kp1",
+    "SK": "META",
+    "kind": "KNOWLEDGE_POINT",
+    "payload": {
+      "knowledgePointId": "synthetic-kp1",
+      "certificationId": "synthetic-cert",
+      "examTopicId": "synthetic-topic1",
+      "title": "架空RouteとService",
+      "summary": "架空GatewayではRouteがServiceを参照する。実試験問題ではない。",
+      "sourceRevisionIds": ["synthetic-sr1"],
+      "version": 1,
+      "status": "ACTIVE"
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "QUESTION#synthetic-q1",
+    "SK": "META",
+    "kind": "QUESTION_HEAD",
+    "payload": {
+      "questionId": "synthetic-q1",
+      "certificationId": "synthetic-cert",
+      "latestRevisionId": "synthetic-qr2",
+      "currentPublishedRevisionId": "synthetic-qr1",
+      "version": 1
+    },
+    "GSI1PK": "PUBLISHED#synthetic-cert",
+    "GSI1SK": "synthetic-q1"
+  },
+  {
+    "table": "Question",
+    "PK": "QUESTION#synthetic-q1",
+    "SK": "HISTORY#0000000000000001#synthetic-qr1",
+    "kind": "QUESTION_HISTORY",
+    "payload": {
+      "questionId": "synthetic-q1",
+      "questionRevisionId": "synthetic-qr1",
+      "revisionOrdinal": 1
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "REVISION#synthetic-qr1",
+    "SK": "CONTENT",
+    "kind": "QUESTION_CONTENT",
+    "payload": {
+      "revision": {
+        "questionId": "synthetic-q1",
+        "questionRevisionId": "synthetic-qr1",
+        "certificationId": "synthetic-cert",
+        "revisionOrdinal": 1,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "knowledgePointIds": ["synthetic-kp1"],
+        "questionIntent": {
+          "questionType": "single_choice",
+          "format": "direct",
+          "learningObjective": "架空Routeの参照を理解する",
+          "difficulty": "beginner",
+          "targetConcept": "RouteとService",
+          "constraints": ["実試験問題を使わない"],
+          "sourceReferences": [
+            {
+              "sourceRevisionId": "synthetic-sr1",
+              "locator": "section:route-service"
+            }
+          ]
+        },
+        "question": {
+          "type": "single_choice",
+          "stem": "架空GatewayでRouteが参照する対象はどれか。",
+          "options": [
+            {
+              "id": "A",
+              "text": "Service"
+            },
+            {
+              "id": "B",
+              "text": "画面の配色設定"
+            }
+          ],
+          "correctOptionIds": ["A"],
+          "explanation": "架空SourceでRouteとServiceの関係を定義する。",
+          "optionExplanations": {
+            "A": "架空Sourceの定義に一致する。",
+            "B": "Routingの参照対象ではない。"
+          },
+          "sourceReferences": [
+            {
+              "sourceRevisionId": "synthetic-sr1",
+              "locator": "section:route-service"
+            }
+          ]
+        },
+        "questionSources": [
+          {
+            "questionRevisionId": "synthetic-qr1",
+            "sourceRevisionId": "synthetic-sr1",
+            "knowledgePointId": "synthetic-kp1",
+            "usagePurpose": "NORMATIVE_TECHNICAL",
+            "relation": "SUPPORTS_KNOWLEDGE_POINT",
+            "sourcePolicyDecisionId": "synthetic-policy1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "REVISION#synthetic-qr1",
+    "SK": "STATE",
+    "kind": "QUESTION_STATE",
+    "payload": {
+      "questionId": "synthetic-q1",
+      "questionRevisionId": "synthetic-qr1",
+      "status": "PUBLISHED",
+      "version": 1
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "REVISION#synthetic-qr1",
+    "SK": "REVIEW",
+    "kind": "QUESTION_REVIEW",
+    "payload": {
+      "questionReviewId": "synthetic-review1",
+      "questionRevisionId": "synthetic-qr1",
+      "reviewerId": "synthetic-reviewer",
+      "decision": "APPROVE",
+      "reviewedAt": "2026-10-04T00:00:00Z"
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "REVISION#synthetic-qr2",
+    "SK": "EVAL#synthetic-eval1",
+    "kind": "QUESTION_EVALUATION",
+    "payload": {
+      "questionRevisionId": "synthetic-qr2",
+      "evaluationId": "synthetic-eval1",
+      "pipelineRunId": "synthetic-run1",
+      "contentChecksum": {
+        "algorithm": "SHA-256",
+        "value": "dbef869bd1b98fdb39cd509de0e949878cf74f5c369d05e381e9026b61c8bf75"
+      },
+      "artifact": {
+        "artifactId": "synthetic-evaluation1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "7cee5b268219d032ecec375a6ecc36807cb58210f0a1581b66d7b954f12fe402"
+        },
+        "contentType": "application/json",
+        "byteSize": 425,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      }
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "REVIEW_TARGET#CANDIDATE#synthetic-run1#candidate-1",
+    "SK": "QUEUE",
+    "kind": "REVIEW_TARGET",
+    "payload": {
+      "targetKind": "CANDIDATE",
+      "pipelineRunId": "synthetic-run1",
+      "candidateId": "candidate-1",
+      "certificationId": "synthetic-cert",
+      "submittedAt": "2026-10-04T00:00:00Z",
+      "artifact": {
+        "artifactId": "synthetic-candidate1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "9fcbe82706a7c907d728b59710b772db2be1144b1ac1f9d07ad53ae2219a573c"
+        },
+        "contentType": "application/json",
+        "byteSize": 5105,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      }
+    },
+    "GSI2PK": "REVIEW#synthetic-cert#CANDIDATE",
+    "GSI2SK": "2026-10-04T00%3A00%3A00.000Z#CANDIDATE#synthetic-run1#candidate-1"
+  },
+  {
+    "table": "Pipeline",
+    "PK": "RUN#synthetic-run1",
+    "SK": "META",
+    "kind": "PIPELINE_HEAD",
+    "payload": {
+      "pipelineRunId": "synthetic-run1",
+      "certificationId": "synthetic-cert",
+      "immutableInputFingerprint": "17f8454cc502920ef29db9ccf086eb7df8706daaa0f49a43917e038657cce0fb",
+      "status": "SUCCEEDED",
+      "version": 1
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "RUN#synthetic-run1",
+    "SK": "INPUT",
+    "kind": "PIPELINE_INPUT",
+    "payload": {
+      "pipelineRunId": "synthetic-run1",
+      "artifact": {
+        "artifactId": "synthetic-run-input1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "ab807179f474f85bd90b3be6882a8578c4f87ea0ec1374f1ee1ebc2a7afc898e"
+        },
+        "contentType": "application/json",
+        "byteSize": 3602,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      }
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "RUN#synthetic-run1",
+    "SK": "STAGE#QUESTION_EVALUATION",
+    "kind": "PIPELINE_STAGE",
+    "payload": {
+      "pipelineRunId": "synthetic-run1",
+      "certificationId": "synthetic-cert",
+      "stage": "QUESTION_EVALUATION",
+      "attempt": 1,
+      "status": "SUCCEEDED",
+      "version": 1
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "RUN#synthetic-run1",
+    "SK": "EVENT#QUESTION_EVALUATION#0000000000000001#0000000000000001",
+    "kind": "PIPELINE_EVENT",
+    "payload": {
+      "pipelineRunId": "synthetic-run1",
+      "stage": "QUESTION_EVALUATION",
+      "attempt": 1,
+      "eventOrdinal": 1,
+      "status": "SUCCEEDED",
+      "occurredAt": "2026-10-04T00:00:00Z"
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "RUN#synthetic-run1",
+    "SK": "ARTIFACT#QUESTION_EVALUATION#0000000000000001",
+    "kind": "PIPELINE_ARTIFACT",
+    "payload": {
+      "pipelineRunId": "synthetic-run1",
+      "stage": "QUESTION_EVALUATION",
+      "attempt": 1,
+      "artifact": {
+        "artifactId": "synthetic-evaluation1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "7cee5b268219d032ecec375a6ecc36807cb58210f0a1581b66d7b954f12fe402"
+        },
+        "contentType": "application/json",
+        "byteSize": 425,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      }
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "RUN#synthetic-run1",
+    "SK": "MATERIALIZATION#candidate-1",
+    "kind": "MATERIALIZATION",
+    "payload": {
+      "pipelineRunId": "synthetic-run1",
+      "candidateId": "candidate-1",
+      "questionId": "synthetic-q1",
+      "questionRevisionId": "synthetic-qr2"
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "OPERATION#synthetic-reviewer",
+    "SK": "human_decision#synthetic-op1",
+    "kind": "OPERATION_RECEIPT",
+    "payload": {
+      "actorId": "synthetic-reviewer",
+      "operationKind": "human_decision",
+      "operationId": "synthetic-op1",
+      "requestDigest": "9f81843c10cc9b6ff857418220e23a4ec9da4606131b98f7875caf0361c4d393",
+      "resultId": "synthetic-review1",
+      "committedAt": "2026-10-04T00:00:00Z"
+    }
+  },
+  {
+    "table": "Content",
+    "PK": "ARTIFACT#synthetic-original1",
+    "SK": "META",
+    "kind": "ARTIFACT_MANIFEST",
+    "payload": {
+      "artifact": {
+        "artifactId": "synthetic-original1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "ec3578c85a6e74c22e08701a5cc6a25e455d6246150aa7db099a00fd26e53fd2"
+        },
+        "contentType": "text/plain; charset=utf-8",
+        "byteSize": 83,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      },
+      "owner": {
+        "kind": "SOURCE_ORIGINAL",
+        "sourceDocumentId": "synthetic-source1",
+        "sourceRevisionId": "synthetic-sr1"
+      },
+      "bucket": "synthetic-bucket",
+      "objectKey": "sources/synthetic-source1/synthetic-sr1/original/synthetic-original1"
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "REVIEW_TARGET#QUESTION_REVISION#synthetic-qr2",
+    "SK": "QUEUE",
+    "kind": "REVIEW_TARGET",
+    "payload": {
+      "targetKind": "QUESTION_REVISION",
+      "questionRevisionId": "synthetic-qr2",
+      "certificationId": "synthetic-cert",
+      "submittedAt": "2026-10-04T00:00:00Z"
+    },
+    "GSI2PK": "REVIEW#synthetic-cert#QUESTION_REVISION",
+    "GSI2SK": "2026-10-04T00%3A00%3A00.000Z#QUESTION_REVISION#synthetic-qr2"
+  },
+  {
+    "table": "Content",
+    "PK": "ARTIFACT#synthetic-normalized1",
+    "SK": "META",
+    "kind": "ARTIFACT_MANIFEST",
+    "payload": {
+      "artifact": {
+        "artifactId": "synthetic-normalized1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "1862e58d3670dd9a1d8d7f0a09ed560ff7ec7c3b6d51fe4b81ab2e665159e426"
+        },
+        "contentType": "application/json",
+        "byteSize": 216,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      },
+      "owner": {
+        "kind": "SOURCE_NORMALIZED",
+        "sourceDocumentId": "synthetic-source1",
+        "sourceRevisionId": "synthetic-sr1",
+        "normalizationVersion": "synthetic-v1"
+      },
+      "bucket": "synthetic-bucket",
+      "objectKey": "sources/synthetic-source1/synthetic-sr1/normalized/synthetic-v1/synthetic-normalized1"
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "ARTIFACT#synthetic-question-content1",
+    "SK": "META",
+    "kind": "ARTIFACT_MANIFEST",
+    "payload": {
+      "artifact": {
+        "artifactId": "synthetic-question-content1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "6eb64f304c8aacc5297b29d8084b1ae7245dae4aba5f22acaa3f77f7a01ce29c"
+        },
+        "contentType": "application/json",
+        "byteSize": 1574,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      },
+      "owner": {
+        "kind": "QUESTION_CONTENT",
+        "questionId": "synthetic-q1",
+        "questionRevisionId": "synthetic-qr1"
+      },
+      "bucket": "synthetic-bucket",
+      "objectKey": "questions/synthetic-q1/synthetic-qr1/synthetic-question-content1"
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "ARTIFACT#synthetic-run-input1",
+    "SK": "META",
+    "kind": "ARTIFACT_MANIFEST",
+    "payload": {
+      "artifact": {
+        "artifactId": "synthetic-run-input1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "ab807179f474f85bd90b3be6882a8578c4f87ea0ec1374f1ee1ebc2a7afc898e"
+        },
+        "contentType": "application/json",
+        "byteSize": 3602,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      },
+      "owner": {
+        "kind": "RUN_INPUT",
+        "pipelineRunId": "synthetic-run1"
+      },
+      "bucket": "synthetic-bucket",
+      "objectKey": "pipeline/synthetic-run1/input/synthetic-run-input1"
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "ARTIFACT#synthetic-evaluation1",
+    "SK": "META",
+    "kind": "ARTIFACT_MANIFEST",
+    "payload": {
+      "artifact": {
+        "artifactId": "synthetic-evaluation1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "7cee5b268219d032ecec375a6ecc36807cb58210f0a1581b66d7b954f12fe402"
+        },
+        "contentType": "application/json",
+        "byteSize": 425,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      },
+      "owner": {
+        "kind": "PIPELINE",
+        "pipelineRunId": "synthetic-run1",
+        "stage": "QUESTION_EVALUATION",
+        "attempt": 1
+      },
+      "bucket": "synthetic-bucket",
+      "objectKey": "pipeline/synthetic-run1/QUESTION_EVALUATION/0000000000000001/synthetic-evaluation1"
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "ARTIFACT#synthetic-candidate1",
+    "SK": "META",
+    "kind": "ARTIFACT_MANIFEST",
+    "payload": {
+      "artifact": {
+        "artifactId": "synthetic-candidate1",
+        "checksum": {
+          "algorithm": "SHA-256",
+          "value": "9fcbe82706a7c907d728b59710b772db2be1144b1ac1f9d07ad53ae2219a573c"
+        },
+        "contentType": "application/json",
+        "byteSize": 5105,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "schemaVersion": 1
+      },
+      "owner": {
+        "kind": "PIPELINE",
+        "pipelineRunId": "synthetic-run1",
+        "stage": "QUESTION_EVALUATION",
+        "attempt": 1
+      },
+      "bucket": "synthetic-bucket",
+      "objectKey": "pipeline/synthetic-run1/QUESTION_EVALUATION/0000000000000001/synthetic-candidate1"
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "REVISION#synthetic-qr2",
+    "SK": "CONTENT",
+    "kind": "QUESTION_CONTENT",
+    "payload": {
+      "revision": {
+        "questionId": "synthetic-q1",
+        "questionRevisionId": "synthetic-qr2",
+        "certificationId": "synthetic-cert",
+        "revisionOrdinal": 2,
+        "createdAt": "2026-10-04T00:00:00Z",
+        "knowledgePointIds": ["synthetic-kp1"],
+        "questionIntent": {
+          "questionType": "single_choice",
+          "format": "direct",
+          "learningObjective": "架空Routeの参照を理解する",
+          "difficulty": "beginner",
+          "targetConcept": "RouteとService",
+          "constraints": ["実試験問題を使わない"],
+          "sourceReferences": [
+            {
+              "sourceRevisionId": "synthetic-sr1",
+              "locator": "section:route-service"
+            }
+          ]
+        },
+        "question": {
+          "type": "single_choice",
+          "stem": "架空GatewayでRouteが参照する対象はどれか。",
+          "options": [
+            {
+              "id": "A",
+              "text": "Service"
+            },
+            {
+              "id": "B",
+              "text": "画面の配色設定"
+            }
+          ],
+          "correctOptionIds": ["A"],
+          "explanation": "架空SourceでRouteとServiceの関係を定義する。",
+          "optionExplanations": {
+            "A": "架空Sourceの定義に一致する。",
+            "B": "Routingの参照対象ではない。"
+          },
+          "sourceReferences": [
+            {
+              "sourceRevisionId": "synthetic-sr1",
+              "locator": "section:route-service"
+            }
+          ]
+        },
+        "questionSources": [
+          {
+            "questionRevisionId": "synthetic-qr2",
+            "sourceRevisionId": "synthetic-sr1",
+            "knowledgePointId": "synthetic-kp1",
+            "usagePurpose": "NORMATIVE_TECHNICAL",
+            "relation": "SUPPORTS_KNOWLEDGE_POINT",
+            "sourcePolicyDecisionId": "synthetic-policy1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "QUESTION#synthetic-q1",
+    "SK": "HISTORY#0000000000000002#synthetic-qr2",
+    "kind": "QUESTION_HISTORY",
+    "payload": {
+      "questionId": "synthetic-q1",
+      "questionRevisionId": "synthetic-qr2",
+      "revisionOrdinal": 2
+    }
+  },
+  {
+    "table": "Question",
+    "PK": "REVISION#synthetic-qr2",
+    "SK": "STATE",
+    "kind": "QUESTION_STATE",
+    "payload": {
+      "questionId": "synthetic-q1",
+      "questionRevisionId": "synthetic-qr2",
+      "status": "REVIEW_REQUIRED",
+      "version": 0
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "RUN#synthetic-waiting-run",
+    "SK": "META",
+    "kind": "PIPELINE_HEAD",
+    "payload": {
+      "pipelineRunId": "synthetic-waiting-run",
+      "certificationId": "synthetic-cert",
+      "status": "RUNNING",
+      "version": 0
+    }
+  },
+  {
+    "table": "Pipeline",
+    "PK": "RUN#synthetic-waiting-run",
+    "SK": "STAGE#KNOWLEDGE_EXTRACTION",
+    "kind": "PIPELINE_STAGE",
+    "payload": {
+      "pipelineRunId": "synthetic-waiting-run",
+      "certificationId": "synthetic-cert",
+      "stage": "KNOWLEDGE_EXTRACTION",
+      "attempt": 0,
+      "status": "PENDING",
+      "version": 0,
+      "dueAt": "2026-10-04T00:00:00Z"
+    },
+    "GSI1PK": "WORK#synthetic-cert#KNOWLEDGE_EXTRACTION#PENDING",
+    "GSI1SK": "2026-10-04T00%3A00%3A00.000Z#synthetic-waiting-run"
+  }
+]
