@@ -1,0 +1,171 @@
+{
+  "candidateId": "candidate-1",
+  "certification": {
+    "certificationId": "synthetic-cert",
+    "name": "架空資格"
+  },
+  "examTopics": [
+    {
+      "certificationId": "synthetic-cert",
+      "examTopicId": "synthetic-topic1",
+      "name": "架空Routing"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "candidateId": "kp-candidate-1",
+      "title": "架空RouteとService",
+      "summary": "RouteがServiceを参照する。",
+      "examTopicId": "synthetic-topic1",
+      "sourceReferences": [
+        {
+          "sourceRevisionId": "synthetic-sr1",
+          "locator": "section:route-service"
+        }
+      ]
+    }
+  ],
+  "questionIntent": {
+    "questionType": "single_choice",
+    "format": "direct",
+    "learningObjective": "架空Routeの参照を理解する",
+    "difficulty": "beginner",
+    "targetConcept": "RouteとService",
+    "constraints": ["実試験問題を使わない"],
+    "sourceReferences": [
+      {
+        "sourceRevisionId": "synthetic-sr1",
+        "locator": "section:route-service"
+      }
+    ],
+    "knowledgePointCandidateIds": ["kp-candidate-1"]
+  },
+  "question": {
+    "type": "single_choice",
+    "stem": "架空GatewayでRouteが参照する対象はどれか。",
+    "options": [
+      {
+        "id": "A",
+        "text": "Service"
+      },
+      {
+        "id": "B",
+        "text": "画面の配色設定"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "架空SourceでRouteとServiceの関係を定義する。",
+    "optionExplanations": {
+      "A": "架空Sourceの定義に一致する。",
+      "B": "Routingの参照対象ではない。"
+    },
+    "sourceReferences": [
+      {
+        "sourceRevisionId": "synthetic-sr1",
+        "locator": "section:route-service"
+      }
+    ],
+    "candidateId": "candidate-1",
+    "knowledgePointCandidateIds": ["kp-candidate-1"]
+  },
+  "sourceRevision": {
+    "sourceDocumentId": "synthetic-source1",
+    "sourceRevisionId": "synthetic-sr1",
+    "sourceUrlAtRetrieval": "https://docs.example.test/gateway/routes",
+    "retrievedAt": "2026-10-04T00:00:00Z",
+    "contentFingerprint": "synthetic-fingerprint-v1",
+    "classificationAtUse": "TRUSTED",
+    "usagePurposeAtUse": "NORMATIVE_TECHNICAL",
+    "sourceKindAtUse": "OFFICIAL_DOCUMENTATION",
+    "sourcePolicyDecisionId": "synthetic-policy1",
+    "sourceMetadataSnapshot": {
+      "sourceUrl": "https://docs.example.test/gateway/routes",
+      "sourceOwner": "Example Systems",
+      "originStatus": "VERIFIED",
+      "accessClassification": "PUBLIC",
+      "automatedAccess": "ALLOWED",
+      "purposeAlignment": "ALIGNED",
+      "terms": {
+        "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+        "termsUrl": "https://docs.example.test/terms",
+        "checkedAt": "2026-10-04T00:00:00Z",
+        "checkedBy": "synthetic-reviewer"
+      }
+    },
+    "matchedAllowRuleSnapshot": {
+      "id": "synthetic-rule1",
+      "owner": "Example Systems",
+      "hostname": "docs.example.test",
+      "pathPrefix": "/gateway",
+      "allowedKinds": ["OFFICIAL_DOCUMENTATION"],
+      "allowedPurposes": ["NORMATIVE_TECHNICAL"],
+      "notes": "架空Source専用。Production Allowlistではない。"
+    },
+    "termsMetadataSnapshot": {
+      "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+      "termsUrl": "https://docs.example.test/terms",
+      "checkedAt": "2026-10-04T00:00:00Z",
+      "checkedBy": "synthetic-reviewer"
+    }
+  },
+  "groundingSegments": [
+    {
+      "sourceRevisionId": "synthetic-sr1",
+      "locator": "section:route-service",
+      "text": "架空GatewayではRouteがServiceを参照する。"
+    }
+  ],
+  "evaluation": {
+    "decision": "PASS",
+    "checks": {
+      "CERTIFICATION_SCOPE": "PASS",
+      "KNOWLEDGE_POINT_ALIGNMENT": "PASS",
+      "ANSWER_GROUNDED": "PASS",
+      "DISTRACTORS_INCORRECT": "PASS",
+      "ANSWER_CARDINALITY": "PASS",
+      "NO_UNSUPPORTED_CLAIMS": "PASS",
+      "NO_AMBIGUITY": "PASS",
+      "QUESTION_TYPE_APPROPRIATE": "PASS",
+      "STEM_SELF_CONTAINED": "PASS"
+    },
+    "findings": [],
+    "ambiguityNotes": [],
+    "assumptions": []
+  },
+  "reviewEligibility": "ELIGIBLE_FOR_HUMAN_REVIEW",
+  "pipelineRunId": "synthetic-run1",
+  "stageRuns": [
+    {
+      "pipelineRunId": "synthetic-run1",
+      "stage": "KNOWLEDGE_EXTRACTION",
+      "attempt": 1,
+      "status": "SUCCEEDED",
+      "startedAt": "2026-10-04T00:00:00Z",
+      "completedAt": "2026-10-04T00:00:00Z"
+    },
+    {
+      "pipelineRunId": "synthetic-run1",
+      "stage": "QUESTION_PLANNING",
+      "attempt": 1,
+      "status": "SUCCEEDED",
+      "startedAt": "2026-10-04T00:00:00Z",
+      "completedAt": "2026-10-04T00:00:00Z"
+    },
+    {
+      "pipelineRunId": "synthetic-run1",
+      "stage": "QUESTION_GENERATION",
+      "attempt": 1,
+      "status": "SUCCEEDED",
+      "startedAt": "2026-10-04T00:00:00Z",
+      "completedAt": "2026-10-04T00:00:00Z"
+    },
+    {
+      "pipelineRunId": "synthetic-run1",
+      "stage": "QUESTION_EVALUATION",
+      "attempt": 1,
+      "status": "SUCCEEDED",
+      "startedAt": "2026-10-04T00:00:00Z",
+      "completedAt": "2026-10-04T00:00:00Z"
+    }
+  ]
+}

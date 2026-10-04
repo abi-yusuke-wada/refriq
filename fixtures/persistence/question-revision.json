@@ -1,0 +1,52 @@
+{
+  "questionId": "synthetic-q1",
+  "questionRevisionId": "synthetic-qr1",
+  "certificationId": "synthetic-cert",
+  "revisionOrdinal": 1,
+  "createdAt": "2026-10-04T00:00:00Z",
+  "knowledgePointIds": ["synthetic-kp1"],
+  "questionIntent": {
+    "questionType": "single_choice",
+    "format": "direct",
+    "learningObjective": "架空Routeの参照を理解する",
+    "difficulty": "beginner",
+    "targetConcept": "RouteとService",
+    "constraints": ["実試験問題を使わない"],
+    "sourceReferences": [
+      {
+        "sourceRevisionId": "synthetic-sr1",
+        "locator": "section:route-service"
+      }
+    ]
+  },
+  "question": {
+    "type": "single_choice",
+    "stem": "架空GatewayでRouteが参照する対象はどれか。",
+    "options": [
+      { "id": "A", "text": "Service" },
+      { "id": "B", "text": "画面の配色設定" }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "架空SourceでRouteとServiceの関係を定義する。",
+    "optionExplanations": {
+      "A": "架空Sourceの定義に一致する。",
+      "B": "Routingの参照対象ではない。"
+    },
+    "sourceReferences": [
+      {
+        "sourceRevisionId": "synthetic-sr1",
+        "locator": "section:route-service"
+      }
+    ]
+  },
+  "questionSources": [
+    {
+      "questionRevisionId": "synthetic-qr1",
+      "sourceRevisionId": "synthetic-sr1",
+      "knowledgePointId": "synthetic-kp1",
+      "usagePurpose": "NORMATIVE_TECHNICAL",
+      "relation": "SUPPORTS_KNOWLEDGE_POINT",
+      "sourcePolicyDecisionId": "synthetic-policy1"
+    }
+  ]
+}

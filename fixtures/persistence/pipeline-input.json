@@ -1,0 +1,101 @@
+{
+  "certification": {
+    "certificationId": "synthetic-cert",
+    "name": "架空資格"
+  },
+  "examTopics": [
+    {
+      "certificationId": "synthetic-cert",
+      "examTopicId": "synthetic-topic1",
+      "name": "架空Routing"
+    }
+  ],
+  "sourceRevision": {
+    "snapshot": {
+      "sourceDocumentId": "synthetic-source1",
+      "sourceRevisionId": "synthetic-sr1",
+      "sourceUrlAtRetrieval": "https://docs.example.test/gateway/routes",
+      "retrievedAt": "2026-10-04T00:00:00Z",
+      "contentFingerprint": "synthetic-fingerprint-v1",
+      "classificationAtUse": "TRUSTED",
+      "usagePurposeAtUse": "NORMATIVE_TECHNICAL",
+      "sourceKindAtUse": "OFFICIAL_DOCUMENTATION",
+      "sourcePolicyDecisionId": "synthetic-policy1",
+      "sourceMetadataSnapshot": {
+        "sourceUrl": "https://docs.example.test/gateway/routes",
+        "sourceOwner": "Example Systems",
+        "originStatus": "VERIFIED",
+        "accessClassification": "PUBLIC",
+        "automatedAccess": "ALLOWED",
+        "purposeAlignment": "ALIGNED",
+        "terms": {
+          "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+          "termsUrl": "https://docs.example.test/terms",
+          "checkedAt": "2026-10-04T00:00:00Z",
+          "checkedBy": "synthetic-reviewer"
+        }
+      },
+      "matchedAllowRuleSnapshot": {
+        "id": "synthetic-rule1",
+        "owner": "Example Systems",
+        "hostname": "docs.example.test",
+        "pathPrefix": "/gateway",
+        "allowedKinds": ["OFFICIAL_DOCUMENTATION"],
+        "allowedPurposes": ["NORMATIVE_TECHNICAL"],
+        "notes": "架空Source専用。Production Allowlistではない。"
+      },
+      "termsMetadataSnapshot": {
+        "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+        "termsUrl": "https://docs.example.test/terms",
+        "checkedAt": "2026-10-04T00:00:00Z",
+        "checkedBy": "synthetic-reviewer"
+      }
+    },
+    "policyDecision": {
+      "sourcePolicyDecisionId": "synthetic-policy1",
+      "sourceDocumentId": "synthetic-source1",
+      "classification": "TRUSTED",
+      "usagePurpose": "NORMATIVE_TECHNICAL",
+      "sourceKind": "OFFICIAL_DOCUMENTATION",
+      "reasonCodes": [],
+      "evaluatedAt": "2026-10-04T00:00:00Z",
+      "matchedAllowRuleId": "synthetic-rule1",
+      "matchedAllowRuleSnapshot": {
+        "id": "synthetic-rule1",
+        "owner": "Example Systems",
+        "hostname": "docs.example.test",
+        "pathPrefix": "/gateway",
+        "allowedKinds": ["OFFICIAL_DOCUMENTATION"],
+        "allowedPurposes": ["NORMATIVE_TECHNICAL"],
+        "notes": "架空Source専用。Production Allowlistではない。"
+      },
+      "sourceMetadataSnapshot": {
+        "sourceUrl": "https://docs.example.test/gateway/routes",
+        "sourceOwner": "Example Systems",
+        "originStatus": "VERIFIED",
+        "accessClassification": "PUBLIC",
+        "automatedAccess": "ALLOWED",
+        "purposeAlignment": "ALIGNED",
+        "terms": {
+          "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+          "termsUrl": "https://docs.example.test/terms",
+          "checkedAt": "2026-10-04T00:00:00Z",
+          "checkedBy": "synthetic-reviewer"
+        }
+      },
+      "termsMetadataSnapshot": {
+        "reviewStatus": "CLEARED_FOR_PRODUCT_USE",
+        "termsUrl": "https://docs.example.test/terms",
+        "checkedAt": "2026-10-04T00:00:00Z",
+        "checkedBy": "synthetic-reviewer"
+      }
+    }
+  },
+  "groundingSegments": [
+    {
+      "sourceRevisionId": "synthetic-sr1",
+      "locator": "section:route-service",
+      "text": "架空GatewayではRouteがServiceを参照する。"
+    }
+  ]
+}

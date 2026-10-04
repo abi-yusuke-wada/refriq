@@ -44,6 +44,18 @@ importers:
 
   packages/domain: {}
 
+  packages/persistence:
+    dependencies:
+      '@refriq/application':
+        specifier: workspace:*
+        version: link:../application
+      '@refriq/domain':
+        specifier: workspace:*
+        version: link:../domain
+      ajv:
+        specifier: ^8.17.1
+        version: 8.20.0
+
 packages:
 
   '@biomejs/biome@2.5.11':

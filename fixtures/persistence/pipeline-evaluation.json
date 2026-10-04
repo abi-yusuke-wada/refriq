@@ -1,0 +1,17 @@
+{
+  "decision": "PASS",
+  "checks": {
+    "CERTIFICATION_SCOPE": "PASS",
+    "KNOWLEDGE_POINT_ALIGNMENT": "PASS",
+    "ANSWER_GROUNDED": "PASS",
+    "DISTRACTORS_INCORRECT": "PASS",
+    "ANSWER_CARDINALITY": "PASS",
+    "NO_UNSUPPORTED_CLAIMS": "PASS",
+    "NO_AMBIGUITY": "PASS",
+    "QUESTION_TYPE_APPROPRIATE": "PASS",
+    "STEM_SELF_CONTAINED": "PASS"
+  },
+  "findings": [],
+  "ambiguityNotes": [],
+  "assumptions": []
+}

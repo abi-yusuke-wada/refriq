@@ -117,7 +117,7 @@ const questionOptionSchema = objectSchema({
   text: nonEmptyString,
 });
 
-const questionContentSchema: AnySchema = {
+export const questionContentSchema: AnySchema = {
   ...objectSchema({
     type: { type: "string", enum: [...QUESTION_TYPES] },
     stem: nonEmptyString,
@@ -234,7 +234,7 @@ const allowedSourceSchema = objectSchema(
   ["id", "owner", "hostname", "allowedKinds", "allowedPurposes", "notes"],
 );
 
-const sourcePolicyDecisionSchema = objectSchema(
+export const sourcePolicyDecisionSchema = objectSchema(
   {
     sourcePolicyDecisionId: nonEmptyString,
     sourceDocumentId: nonEmptyString,
@@ -265,7 +265,7 @@ const sourcePolicyDecisionSchema = objectSchema(
   ],
 );
 
-const sourceRevisionPolicySnapshotSchema = objectSchema(
+export const sourceRevisionPolicySnapshotSchema = objectSchema(
   {
     sourceDocumentId: nonEmptyString,
     sourceRevisionId: nonEmptyString,
