@@ -1,0 +1,18 @@
+{
+  "checks": 12,
+  "javaScriptErrors": 0,
+  "passed": [
+    "approved Mock sources-trusted gates",
+    "approved Mock sources-review gates",
+    "approved Mock sources-prohibited gates",
+    "approved Mock sources-ambiguous gates",
+    "approved Mock sources-missing gates",
+    "approved Mock sources-review direct Edit blocked",
+    "approved Mock sources-prohibited direct Edit blocked",
+    "approved Mock policy refresh restores Review / Edit",
+    "approved Mock content-mismatch allows negative decisions only",
+    "approved Mock evaluation-missing allows negative decisions only",
+    "approved Mock confirmed failure / result unknown remain separate",
+    "approved Mock Feedback not_used all-or-none"
+  ]
+}
