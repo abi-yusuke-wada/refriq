@@ -3,3 +3,9 @@ sandbox_mode = "workspace-write"
 
 [sandbox_workspace_write]
 network_access = true
+
+[permissions.refriq-git]
+extends = ":workspace"
+
+[permissions.refriq-git.filesystem]
+"/mnt/c/Users/10616_wada/develop/refriq/.git" = "write"
