@@ -131,21 +131,23 @@ export class ReviewerService {
     const common = validateHumanDecisionTarget(record, command);
     const approve = common.ok ? validateApproveReadiness(record) : common;
     const sources = sourceStatuses(record);
-    const prohibited = new Set(
+    const displayable = new Set(
       sources
-        .filter((s) =>
-          s.decisions.some((p) => p.classification === "PROHIBITED"),
+        .filter(
+          (s) =>
+            s.decisions.length === 1 &&
+            s.decisions[0]?.classification === "TRUSTED",
         )
         .map((s) => s.source.sourceRevisionId),
     );
-    // 禁止Sourceの本文をHTTP応答へ含めない。Candidate由来Groundingの参照metadataは保持。
+    // 現在Policyが一意にTRUSTEDと確認できた参照Sourceだけ本文を返す。証跡metadataは保持。
     const safe = structuredClone(record);
     const redactContext = (context: ReviewRecord["context"]) => ({
       ...context,
       groundingSegments: context.groundingSegments.map((segment) =>
-        prohibited.has(segment.sourceRevisionId)
-          ? { ...segment, text: "" }
-          : segment,
+        displayable.has(segment.sourceRevisionId)
+          ? segment
+          : { ...segment, text: "" },
       ),
     });
     const publicRecord = {

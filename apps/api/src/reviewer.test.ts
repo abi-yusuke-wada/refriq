@@ -384,6 +384,86 @@ describe("production Source / Edit / Policy refresh", () => {
         ),
     ).toBe(true);
   });
+  it.each([
+    "sources-trusted",
+    "sources-review",
+    "sources-prohibited",
+    "sources-ambiguous",
+    "sources-missing",
+  ])(
+    "%s exposes grounding text only for the verified TRUSTED source",
+    async (key) => {
+      const original = seed(key);
+      const first = original.context.groundingSegments[0];
+      const secondSource = original.sourceRevisionSnapshots[1];
+      if (!first || !secondSource || !original.evaluation)
+        throw new Error("two Sources and Evaluation required");
+      const second = {
+        ...first,
+        sourceRevisionId: secondSource.sourceRevisionId,
+      };
+      const context = {
+        ...original.context,
+        groundingSegments: [first, second],
+      };
+      const input = {
+        ...original,
+        context,
+        evaluation: {
+          ...original.evaluation,
+          evaluatedContext: structuredClone(context),
+        },
+      };
+      const { service, store } = setup(input);
+      const result = await service.detail(input.questionRevisionId);
+      if (!result.ok) throw new Error("detail required");
+      const expected = [
+        first,
+        { ...second, text: key === "sources-trusted" ? second.text : "" },
+      ];
+      expect(result.value.record.context.groundingSegments).toEqual(expected);
+      expect(
+        result.value.record.evaluation?.evaluatedContext?.groundingSegments,
+      ).toEqual(expected);
+      expect(result.value.record.sourceRevisionSnapshots).toEqual(
+        input.sourceRevisionSnapshots,
+      );
+      expect(await store.readReview(input.questionRevisionId)).toEqual(
+        success(input),
+      );
+    },
+  );
+  it("redacts unreferenced grounding in both contexts while retaining metadata", async () => {
+    const original = seed();
+    const segment = original.context.groundingSegments[0];
+    if (!segment || !original.evaluation) throw new Error("grounding required");
+    const unreferenced = {
+      ...segment,
+      sourceRevisionId: "unreferenced-source",
+    };
+    const context = {
+      ...original.context,
+      groundingSegments: [segment, unreferenced],
+    };
+    const { service, record, store } = setup({
+      ...original,
+      context,
+      evaluation: {
+        ...original.evaluation,
+        evaluatedContext: structuredClone(context),
+      },
+    });
+    const result = await service.detail(record.questionRevisionId);
+    if (!result.ok) throw new Error("detail required");
+    const expected = [segment, { ...unreferenced, text: "" }];
+    expect(result.value.record.context.groundingSegments).toEqual(expected);
+    expect(
+      result.value.record.evaluation?.evaluatedContext?.groundingSegments,
+    ).toEqual(expected);
+    expect(await store.readReview(record.questionRevisionId)).toEqual(
+      success(record),
+    );
+  });
   it("same ID same semantics permits projections; classification / Terms changes require new ID", () => {
     const { record, store } = setup();
     store.refreshPolicies(

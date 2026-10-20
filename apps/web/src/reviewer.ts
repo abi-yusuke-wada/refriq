@@ -103,7 +103,7 @@ export function mountReviewerApp(
       })
       .join(
         "",
-      )}<h3>生成元Candidateが使用したGrounding</h3><p>exact Revisionの現在有効なNormative Sourceへ読み替えません。</p>${value.record.context.groundingSegments.map((g) => `<p>${esc(g.sourceRevisionId)} · ${esc(g.locator)}</p>${g.text ? `<blockquote>${esc(g.text)}</blockquote>` : note("現在禁止のSource本文は表示・再取得・再利用しません。参照metadataを保持します。")}`).join("")}</section>`;
+      )}<h3>生成元Candidateが使用したGrounding</h3><p>exact Revisionの現在有効なNormative Sourceへ読み替えません。</p>${value.record.context.groundingSegments.map((g) => `<p>${esc(g.sourceRevisionId)} · ${esc(g.locator)}</p>${g.text ? `<blockquote>${esc(g.text)}</blockquote>` : note("現在Policyが一意なTRUSTEDと確認できないSource本文は表示・再取得・再利用しません。参照metadataを保持します。")}`).join("")}</section>`;
   }
   function review(value: ReviewDetail): string {
     const record = value.record;

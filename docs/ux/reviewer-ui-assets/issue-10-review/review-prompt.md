@@ -8,7 +8,7 @@ Humanが承認したI-01〜I-06とR-01〜R-04を反映した成果物の再レ�
 
 Issue #10は「Reviewer UIと受験Feedback入力を設計する」です。今回の成果物は日本語UX文書、Static HTML / CSS / JavaScript Mock、架空Fixture、入力制約、検証記録です。Production React、API、DB、認証、LLM接続は対象外です。
 
-Review対象のファイル一覧、画面と操作の対応、検証結果、未実装範囲は`review-context.md`と`screen-flow.md`にまとめています。本文・コード・既存契約の全文は`review-context-complete.txt`にも含めています。画面は`screens.pdf`または`screens/`を確認してください。
+この依頼文は設計段階のレビュー範囲を記録しています。現在参照できるコード・文書・画面・検証結果は[レビュー資料](review-context.md)の一覧から確認してください。過去のPDF / ZIP / 全文TXTは収録されていません。本実装と未接続の境界は[実装引き継ぎ](../../reviewer-implementation.md)を参照してください。
 
 画面画像は表示Snapshotです。クリック操作や実保存を画像だけから検証済みと判断しないでください。コードを実行できない場合は、その制限と未検証箇所を明記してください。
 

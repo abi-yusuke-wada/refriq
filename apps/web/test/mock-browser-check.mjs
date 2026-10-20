@@ -26,6 +26,38 @@ async function review(key) {
   await page.locator("#human").waitFor();
 }
 try {
+  await check(
+    "unresolved Candidate blocks Edit button, direct route and forged submit",
+    async () => {
+      await review("candidate");
+      assert.equal(
+        await page.locator('[data-action="edit"]').isDisabled(),
+        true,
+      );
+      await page.goto(`${base}?case=${crypto.randomUUID()}#edit/candidate`);
+      await page
+        .getByRole("heading", { name: "Editを利用できません" })
+        .waitFor();
+      assert.equal(await page.locator("#edit-form").count(), 0);
+      assert.match(
+        await page.locator("#app").innerText(),
+        /QuestionRevision未作成/,
+      );
+      await page.evaluate(() => {
+        const form = document.createElement("form");
+        form.id = "edit-form";
+        document.querySelector("#app").append(form);
+        form.dispatchEvent(
+          new Event("submit", { bubbles: true, cancelable: true }),
+        );
+      });
+      assert.equal(await page.locator("#edit-form").count(), 0);
+      await page.evaluate(() => {
+        location.hash = "draft/candidate";
+      });
+      await page.getByText("編集候補はありません。", { exact: true }).waitFor();
+    },
+  );
   for (const [key, blocked] of [
     ["sources-trusted", false],
     ["sources-review", true],
@@ -94,6 +126,76 @@ try {
         );
       },
     );
+  await check(
+    "Policy gate rejection closes confirmation without retry or repeated Decision IDs",
+    async () => {
+      await review("ready");
+      const historical = await page
+        .locator("#source dt")
+        .filter({ hasText: "取得時Policy（不変）" })
+        .evaluateAll((items) =>
+          items.map((item) => item.nextElementSibling.textContent),
+        );
+      await page.locator("#state").selectOption("policy-changed");
+      let firstSourceState;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        // 2回目はstaleな操作を再現し、UIのdisabledを迂回してもPolicyを再変更しないことを検証。
+        if (attempt)
+          await page.locator('[data-action="approve"]').evaluate((button) => {
+            button.disabled = false;
+          });
+        await page.locator('[data-action="approve"]').click();
+        await page.locator('[data-action="commit-dialog"]').click();
+        await page.getByRole("dialog").waitFor({ state: "hidden" });
+        assert.match(
+          await page.locator("#app").innerText(),
+          /判断条件が変わったため.*記録していません/,
+        );
+        assert.equal(
+          await page.locator('[data-action="retry-save"]').count(),
+          0,
+        );
+        assert.equal(
+          await page.locator('[data-action="approve"]').isDisabled(),
+          true,
+        );
+        assert.equal(
+          await page.locator('[data-action="edit"]').isDisabled(),
+          true,
+        );
+        assert.equal(
+          await page.locator('[data-action="request-changes"]').isEnabled(),
+          true,
+        );
+        assert.equal(
+          await page.locator('[data-action="reject"]').isEnabled(),
+          true,
+        );
+        const source = await page.locator("#source").innerText();
+        assert.match(source, /REVIEW_REQUIRED/);
+        assert.match(source, /:changed/);
+        assert.doesNotMatch(source, /:changed:changed/);
+        if (attempt) assert.equal(source, firstSourceState);
+        else firstSourceState = source;
+        assert.deepEqual(
+          await page
+            .locator("#source dt")
+            .filter({ hasText: "取得時Policy（不変）" })
+            .evaluateAll((items) =>
+              items.map((item) => item.nextElementSibling.textContent),
+            ),
+          historical,
+        );
+      }
+      await page.locator('[data-action="reject"]').click();
+      await page.locator('[data-action="commit-dialog"]').click();
+      await page.getByRole("dialog").waitFor({ state: "hidden" });
+      assert.match(
+        await page.locator("#human").innerText(),
+        /記録済み:.*REJECT/,
+      );
+    },
+  );
   await check(
     "approved Mock confirmed failure / result unknown remain separate",
     async () => {

@@ -14,17 +14,19 @@ REVIEW_REQUIREDはSource Review等によるPolicy解決待ち、PROHIBITEDはTRU
 
 ## 最初に確認する資料
 
+以下は現在Repositoryに収録されている資料への入口である。以降の設計段階の記録と、本実装・接続境界の現状は[実装引き継ぎ](../../reviewer-implementation.md)で区別する。
+
 | 順序 | 資料 | 読む目的 |
 | --- | --- | --- |
 | 1 | [レビュー依頼文](review-prompt.md) | レビュー範囲・優先観点・回答形式。GPTへ貼り付ける。 |
-| 2 | [Issue契約](issue-contract.md) | 現在のIssue #10本文と依存Issueの参照。 |
+| 2 | [Issue #10](https://github.com/abi-yusuke-wada/refriq/issues/10)と[確定UX契約](../../reviewer-ui.md) | Issue本文・コメントとReviewer / Feedbackの条件。 |
 | 3 | 本資料 | 既存契約、今回のUX選択、実装範囲、制約の区別。 |
-| 4 | [画面と操作](screen-flow.md) | 画面番号、Mockの経路、再生手順、期待する結果。 |
-| 5 | [画面PDF](screens.pdf)と[画像一覧](screens/) | 実際の配置・文言・判断情報・状態の確認。 |
-| 6 | [情報とコードの全文](review-context-complete.txt) | ソース全文、行番号、既存Domain・ADR・Pipelineと実装の照合。 |
-| 7 | [UX文書と検証記録の全文](review-context-complete.txt)（`docs/ux/reviewer-ui.md`、`docs/ux/mockups/reviewer/validation.md`） | 正式な引き継ぎ内容と実施済みEvidence。 |
+| 4 | [実装引き継ぎ](../../reviewer-implementation.md)と[操作Mock](../../mockups/reviewer/index.html) | 画面・操作・Application境界と再生手順。 |
+| 5 | [本実装の検証記録](../production/validation.md)と[画像Manifest](../production/manifest.json) | 収録済みPNG 3枚、Browser結果と検証の限界。 |
+| 6 | [Applicationコード](../../../../packages/application/src/reviewer/)、[Webコード](../../../../apps/web/src/reviewer.ts)、[Domain](../../../domain/)、[ADR](../../../adr/) | 現在の実装と既存契約の照合。 |
+| 7 | [Mock検証記録](../../mockups/reviewer/validation.md)、[本実装Test](../../../../apps/api/src/reviewer.test.ts)、[Browser Test](../../../../apps/web/test/browser-check.mjs) | UX・状態遷移・Input境界の検証。 |
 
-ZIPには上記資料に加え、元のMock一式と必要な既存契約・Issue Snapshotを収録する。ZIP内のMockは`repository/docs/ux/mockups/reviewer/index.html`を開いて再生できる。GPT環境でZIPを展開・HTML実行できない場合も、全文TXT・PDF・PNGで静的レビューができる。操作を実行していない場合は未検証と記載する。
+過去のZIP / PDF / 全Snapshot / 全文TXTはこのbranchには収録されていない。上記の現行コード・文書・PNG・JSONを参照する。HTMLやBrowser Testを実行できない場合は、操作確認を未検証と記載する。
 
 ## Task Contractと今回の到達点
 

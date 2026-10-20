@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 const require = createRequire(import.meta.url);
 const { chromium } = require(
   process.env.REFRIQ_PLAYWRIGHT_MODULE || "playwright",
@@ -122,7 +123,7 @@ try {
         );
       }
       await page.screenshot({
-        path: new URL("evaluation-match.png", output).pathname,
+        path: fileURLToPath(new URL("evaluation-match.png", output)),
         fullPage: true,
       });
     },
@@ -251,7 +252,7 @@ try {
           assert.equal((await control("state")).candidates.length, 0);
           if (scenario === "sources-prohibited")
             await page.screenshot({
-              path: new URL("source-remediation.png", output).pathname,
+              path: fileURLToPath(new URL("source-remediation.png", output)),
               fullPage: true,
             });
         },
@@ -483,7 +484,7 @@ try {
         /すべて|全|3/,
       );
       await page.screenshot({
-        path: new URL("feedback-validation.png", output).pathname,
+        path: fileURLToPath(new URL("feedback-validation.png", output)),
         fullPage: true,
       });
     },

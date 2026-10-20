@@ -274,7 +274,7 @@ Mockは実通信・永続化・競合排他を行わない。将来のUse Case�
 
 ## 後続への引き継ぎと未決事項
 
-- Frontend: 本文書の画面・操作・状態、独立したMockとFixtureをReact等へ実装する。今回Production UIを作っていない。
+- Frontend / Application: 本文書の画面・操作・状態をWeb UI、HTTP Adapter、Application workflowへ実装済み。[実装引き継ぎ](reviewer-implementation.md)に層ごとの責務と接続手順を記載する。残る接続境界は実Persistence Adapter、Authentication、LLM Provider / 再評価・materializationであり、UIを重複実装する必要はない。
 - Application / #11: CandidateからDomainへのmaterialization、同じIntentのQuestion選択、KnowledgePoint ID解決、QuestionSource作成、編集再評価、前Revision読取、Human判断の確定時Gate再確認。
 - Persistence / #12: Immutable Revision / Review / Feedback保存、Reviewと公開参照の整合性、並行Review・Policy変更、重複送信・結果不明時の再取得。
 - Security / Source運用: Reviewer権限、SourceReviewの独立した操作、違反Inputの検知・拒否Metadata・Retention。今回権限や運用方式を決めない。
@@ -286,4 +286,4 @@ Publish Boundaryは`Candidate → exact QuestionRevision / matching Evaluation �
 
 ## 承認指摘の回帰確認
 
-`ready / content-mismatch / evaluation-missing`の評価対象一致・不一致・欠落、`same-locator`参照の個別選択、全not_usedと混在拒否、`diff-reordered`の集合比較、複数Source全TRUSTED / 再確認待ち / 禁止 / 重複 / 未取得、結果不明の保存済み / 未保存確定、Similarityの`not_used / unknown`、Edit / Feedbackのinline errorを[更新画面資料](reviewer-ui-assets/issue-10-review/screen-flow.md)で確認する。Unitでは凍結対象選択・Diff・Domain Gate投影・保存遷移・Feedback境界を、Browserでは実操作・Focus・ARIA・Dialog・保存結果照合を検証する。Snapshotを状態遷移Testの代替にしない。
+`ready / content-mismatch / evaluation-missing`の評価対象一致・不一致・欠落、`same-locator`参照の個別選択、全not_usedと混在拒否、`diff-reordered`の集合比較、複数Source全TRUSTED / 再確認待ち / 禁止 / 重複 / 未取得、結果不明の保存済み / 未保存確定、Similarityの`not_used / unknown`、Edit / Feedbackのinline errorを[本実装の検証記録](reviewer-ui-assets/production/validation.md)で確認する。Unitでは凍結対象選択・Diff・Domain Gate投影・保存遷移・Feedback境界を、Browserでは実操作・Focus・ARIA・Dialog・保存結果照合を検証する。Snapshotを状態遷移Testの代替にしない。

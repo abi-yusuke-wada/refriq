@@ -19,6 +19,7 @@
   let editDraft = null;
   let feedbackDraft = null;
   let savedMessage = "";
+  let rejectionMessage = "";
   let lastHash = location.hash || "#queue";
   const esc = (value) =>
     String(value ?? "—").replace(
@@ -203,9 +204,13 @@
     const intent =
       record.reviewTargetRevision?.questionIntent ?? candidate.questionIntent;
     const blockers = approvalBlockers(record);
-    return `${link("← Review Queue", "queue")}<h1>${esc(record.label)}</h1><div class="identity"><span>Question: <code>${esc(record.questionId ?? "未解決")}</code></span><span>対象Revision: <code>${esc(record.revision?.questionRevisionId ?? "Application Candidateのみ")}</code></span><span>${badge(record.revision?.state ?? "Application Candidate")}</span><span>現在公開中: <code>${esc(record.currentPublishedRevisionId ?? "なし")}</code></span></div><p class="wrap">生成元Candidate（経路metadata）: ${esc(candidate.candidateId)}</p>${record.reviewTargetRevision ? notice("表示・Human Reviewの正本は上記exact QuestionRevisionの凍結Contentです。Candidate Contentへ読み替えません。") : notice("Application Candidateのみです。Domain Revision未作成のため全Human decisionを許可しません。", "warning")}<details id="candidate-metadata"><summary>生成元Candidate Content（Reviewの正本ではありません）</summary><p>${esc(candidate.question.stem)}</p></details>${savedMessage ? notice(savedMessage, "success") : ""}<div class="tabs"><a href="#content" data-section="content">問題・正答・解説</a><a href="#context" data-section="context">Knowledgeと意図</a><a href="#source" data-section="source">Source</a><a href="#evaluation" data-section="evaluation">評価</a><a href="#diff" data-section="diff">差分</a><a href="#human" data-section="human">Human判断</a></div><div class="grid"><section class="card" id="content"><h2>問題・正答候補・解説</h2><p>言語: ${esc(content.language ?? "候補未確定")} · 難易度: ${esc(content.difficulty ?? candidate.questionIntent.difficulty)}</p>${questionView(content)}</section><section class="card" id="context"><h2>KnowledgePointと生成意図</h2>${points.map((point) => `<h3>${esc(point.title)}</h3><p>${esc(point.summary)}</p><p><small>Candidate ID: ${esc(point.candidateId)}<br>Domain ID: ${esc(point.knowledgePointId ?? "未解決")}<br>分野: ${esc(candidate.examTopics.find((topic) => topic.examTopicId === point.examTopicId)?.name)}<br>${point.sourceReferences.map((ref) => `${esc(ref.sourceRevisionId)} · ${esc(ref.locator)}`).join("<br>")}</small></p>`).join("")}<dl><dt>学習目標</dt><dd>${esc(intent.learningObjective)}</dd><dt>測るConcept</dt><dd>${esc(intent.targetConcept)}</dd><dt>形式 / 難易度</dt><dd>${esc(intent.questionType)} / ${esc(intent.format)} / ${esc(intent.difficulty)}</dd><dt>生成の制約</dt><dd>${intent.constraints.map(esc).join("<br>")}</dd></dl></section></div>${sourceView(record)}${evaluationView(record)}${diffView(record)}<section class="card" id="human"><h2>Human Review</h2>${record.humanReview ? notice(`記録済み: ${record.humanReview.questionRevisionId} · ${record.humanReview.decision} · ${record.humanReview.reviewerId} · ${record.humanReview.reviewedAt} · ${record.humanReview.questionReviewId}`, "success") : notice("Human decisionは未記録です。AI評価とは別に、対象Revisionの内容と根拠を確認してください。")}${blockers.map((reason) => notice(reason, "warning")).join("")}${sourceRemediationView(record, "human-source-remediation")}<div class="actions">${button("承認して公開 · APPROVE", "approve", "primary", blockers.length > 0, "human-source-remediation")}${button("修正を依頼 · REQUEST_CHANGES", "request-changes", "", !record.reviewTargetRevision || Boolean(record.humanReview))}${button("却下 · REJECT", "reject", "danger", !record.reviewTargetRevision || Boolean(record.humanReview))}${button("Edit · 新しい候補を作る", "edit", "", !record.sourcePolicyGate.eligible, "human-source-remediation")}</div>${record.editedCandidate ? `<p>${link("保存した編集候補を確認", `draft/${record.key}`)}</p>` : ""}<p class="muted">承認は公開を伴います。確認後もGateに失敗した場合は公開されません。記録済みReviewの変更や同じRevisionへの再判断は行いません。</p></section>`;
+    return `${link("← Review Queue", "queue")}<h1>${esc(record.label)}</h1><div class="identity"><span>Question: <code>${esc(record.questionId ?? "未解決")}</code></span><span>対象Revision: <code>${esc(record.revision?.questionRevisionId ?? "Application Candidateのみ")}</code></span><span>${badge(record.revision?.state ?? "Application Candidate")}</span><span>現在公開中: <code>${esc(record.currentPublishedRevisionId ?? "なし")}</code></span></div><p class="wrap">生成元Candidate（経路metadata）: ${esc(candidate.candidateId)}</p>${record.reviewTargetRevision ? notice("表示・Human Reviewの正本は上記exact QuestionRevisionの凍結Contentです。Candidate Contentへ読み替えません。") : notice("Application Candidateのみです。Domain Revision未作成のため全Human decision・Editを許可しません。", "warning")}<details id="candidate-metadata"><summary>生成元Candidate Content（Reviewの正本ではありません）</summary><p>${esc(candidate.question.stem)}</p></details>${savedMessage ? notice(savedMessage, "success") : ""}${rejectionMessage ? notice(rejectionMessage, "warning") : ""}<div class="tabs"><a href="#content" data-section="content">問題・正答・解説</a><a href="#context" data-section="context">Knowledgeと意図</a><a href="#source" data-section="source">Source</a><a href="#evaluation" data-section="evaluation">評価</a><a href="#diff" data-section="diff">差分</a><a href="#human" data-section="human">Human判断</a></div><div class="grid"><section class="card" id="content"><h2>問題・正答候補・解説</h2><p>言語: ${esc(content.language ?? "候補未確定")} · 難易度: ${esc(content.difficulty ?? candidate.questionIntent.difficulty)}</p>${questionView(content)}</section><section class="card" id="context"><h2>KnowledgePointと生成意図</h2>${points.map((point) => `<h3>${esc(point.title)}</h3><p>${esc(point.summary)}</p><p><small>Candidate ID: ${esc(point.candidateId)}<br>Domain ID: ${esc(point.knowledgePointId ?? "未解決")}<br>分野: ${esc(candidate.examTopics.find((topic) => topic.examTopicId === point.examTopicId)?.name)}<br>${point.sourceReferences.map((ref) => `${esc(ref.sourceRevisionId)} · ${esc(ref.locator)}`).join("<br>")}</small></p>`).join("")}<dl><dt>学習目標</dt><dd>${esc(intent.learningObjective)}</dd><dt>測るConcept</dt><dd>${esc(intent.targetConcept)}</dd><dt>形式 / 難易度</dt><dd>${esc(intent.questionType)} / ${esc(intent.format)} / ${esc(intent.difficulty)}</dd><dt>生成の制約</dt><dd>${intent.constraints.map(esc).join("<br>")}</dd></dl></section></div>${sourceView(record)}${evaluationView(record)}${diffView(record)}<section class="card" id="human"><h2>Human Review</h2>${record.humanReview ? notice(`記録済み: ${record.humanReview.questionRevisionId} · ${record.humanReview.decision} · ${record.humanReview.reviewerId} · ${record.humanReview.reviewedAt} · ${record.humanReview.questionReviewId}`, "success") : notice("Human decisionは未記録です。AI評価とは別に、対象Revisionの内容と根拠を確認してください。")}${blockers.map((reason) => notice(reason, "warning")).join("")}${sourceRemediationView(record, "human-source-remediation")}<div class="actions">${button("承認して公開 · APPROVE", "approve", "primary", blockers.length > 0, "human-source-remediation")}${button("修正を依頼 · REQUEST_CHANGES", "request-changes", "", !record.reviewTargetRevision || Boolean(record.humanReview))}${button("却下 · REJECT", "reject", "danger", !record.reviewTargetRevision || Boolean(record.humanReview))}${button("Edit · 新しい候補を作る", "edit", "", !record.reviewTargetRevision || !record.sourcePolicyGate.eligible, "human-source-remediation")}</div>${record.editedCandidate ? `<p>${link("保存した編集候補を確認", `draft/${record.key}`)}</p>` : ""}<p class="muted">承認は公開を伴います。確認後もGateに失敗した場合は公開されません。記録済みReviewの変更や同じRevisionへの再判断は行いません。</p></section>`;
   }
   function editView(record) {
+    if (!record.reviewTargetRevision) {
+      editDraft = null;
+      return `${link("← 元のReviewへ", `review/${record.key}`)}<h1>Editを利用できません</h1>${notice("Domain QuestionRevision未作成のため、このCandidateからEditできません。exact Revisionの解決が必要です。候補は保存していません。", "warning")}`;
+    }
     if (!record.sourcePolicyGate.eligible) return blockedEditView(record);
     editDraft ??= {
       ...structuredClone(model.reviewContent(record)),
@@ -344,7 +349,13 @@
     );
     (first ?? summary).focus();
   }
-  async function save(statusElement, persist, retry, complete = () => {}) {
+  async function save(
+    statusElement,
+    persist,
+    retry,
+    complete = () => {},
+    rejected = () => false,
+  ) {
     if (busy || pendingSave) return;
     busy = true;
     statusElement.innerHTML = notice(
@@ -374,6 +385,10 @@
           : "success";
     failNext = false;
     operation.settle(outcome);
+    if (rejected()) {
+      restore();
+      return;
+    }
     const confirmedFailure = () => {
       restore();
       // 元の確定ボタンは抑止し、確定未保存のRetryだけを案内する。
@@ -440,11 +455,16 @@
       `<p>対象exact QuestionRevision: <strong>${esc(targetId)}</strong></p><p>凍結Content: ${esc(target.stem)}</p><p>${decision === "APPROVE" ? "同じRevisionを公開し、現在公開参照を切り替えます。既存回答の参照は維持します。" : "同じRevisionへHuman decisionを記録します。上書き・再判断はできません。"}</p><p>生成元Candidate: ${esc(record.candidate.candidateId)}（経路metadata）</p><p>Reviewer: synthetic-reviewer（架空）</p><div id="decision-status" role="status"></div>`,
       `${label}（Mock）`,
       () => {
+        let gateRejected = false;
         const attempt = () =>
           save(
             dialog.querySelector("#decision-status"),
             () => {
-              if (state === "policy-changed" && decision === "APPROVE") {
+              if (
+                state === "policy-changed" &&
+                decision === "APPROVE" &&
+                record.sourcePolicyGate.eligible
+              ) {
                 const documentIds = record.sourceRevisionSnapshots.map(
                   (snapshot) => snapshot.sourceDocumentId,
                 );
@@ -486,7 +506,7 @@
                 record.humanReview ||
                 (decision === "APPROVE" && approvalBlockers(record).length)
               ) {
-                render();
+                gateRejected = true;
                 return false;
               }
               record.humanReview = {
@@ -507,9 +527,19 @@
             },
             attempt,
             () => {
+              rejectionMessage = "";
               savedMessage = `Human ${decision}を記録しました（Mock）。${decision === "APPROVE" ? "同じ対象Revisionを公開しました。" : "公開参照は維持しました。"}`;
               dialog.close();
               render();
+            },
+            () => {
+              if (!gateRejected) return false;
+              savedMessage = "";
+              rejectionMessage =
+                "判断条件が変わったため、このHuman decisionを記録していません。Review対象と現在のblockerを確認してください。保存の再試行では解決しません。";
+              dialog.close();
+              render();
+              return true;
             },
           );
         attempt();
@@ -572,6 +602,7 @@
           read.currentPolicyDecisions,
         );
         record.sourcePolicyGate = structuredClone(read.sourcePolicyGate);
+        rejectionMessage = "";
         savedMessage =
           "外部のSource Review等が完了した後のReview対象・現在Policyを再取得しました（設計例）。取得時Snapshot・Human判断は変更していません。";
         render();
@@ -656,7 +687,7 @@
     }
     if (event.target.id === "edit-form") {
       const record = getRecord(route().key);
-      if (!record.sourcePolicyGate.eligible) {
+      if (!record.reviewTargetRevision || !record.sourcePolicyGate.eligible) {
         render();
         app.querySelector("#edit-blocked")?.focus();
         return;
@@ -697,6 +728,7 @@
         save(
           document.querySelector("#edit-error"),
           () => {
+            if (!record.reviewTargetRevision) return false;
             if (!record.sourcePolicyGate.eligible) {
               const reason = document.createElement("section");
               reason.className = "card";
@@ -809,6 +841,7 @@
         state = "normal";
         failNext = false;
         savedMessage = "";
+        rejectionMessage = "";
         document.querySelector("#state").value = state;
         dialog.close();
         location.hash = "queue";
@@ -849,6 +882,7 @@
     }
     lastHash = location.hash;
     savedMessage = "";
+    rejectionMessage = "";
     render();
     if (!dialog.open) app.focus();
     window.scrollTo(0, 0);

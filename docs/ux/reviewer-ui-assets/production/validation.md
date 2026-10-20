@@ -2,6 +2,35 @@
 
 実施日: 2026-10-15 UTC。対象worktree: `/tmp/refriq-issue10`、branch: `feature/10-reviewer-ui-feedback`。実装説明は[引き継ぎ](../../reviewer-implementation.md)を参照する。
 
+## PR #39のCodeRabbit指摘対応・再検証
+
+実施日: 2026-10-20 UTC。元RepositoryのGit管理領域は読み取り専用のため、GitHubの同じbranchを`/tmp/refriq-issue10`へ取得して修正した。元RepositoryのWorking Treeは変更していない。
+
+| 指摘 | 修正と確認 |
+| --- | --- |
+| ScreenshotのURL Path | `fileURLToPath`を使用。空白・日本語を含む`/tmp/refriq browser 日本語/`へ同一SHA256のBrowser runnerを配置し、3枚すべてが正しいPathへ出力されることを確認 |
+| 未解決CandidateのEdit | Editボタン・direct route・偽造submitで拒否。編集候補を作らないことをBrowserで確認 |
+| Policy変更時のGate拒否 | 確認Dialogを閉じてReviewに理由・blockerを表示。保存Retryを出さず、staleなAPPROVEを再実行してもDecision IDを再変更しない。取得時Decision参照は不変。REJECTは可能 |
+| Review資料の欠落リンク | 現在収録されているContract・実装・Test・PNG / JSONへの参照に変更。過去の未収録PDF / ZIP / 全文TXTを利用可能と案内しない |
+| Frontend引き継ぎ | Web UI・HTTP Adapter・Application実装済みと明記し、永続化・認証・Provider接続の境界を案内 |
+| Grounding本文の返却 | 一意なcurrent TRUSTED Policyを確認できた参照Sourceだけ本文を返す。REVIEW_REQUIRED / PROHIBITED / ambiguous / missing / 未参照Sourceは両Contextの本文を除き、metadataと保存済みSnapshotを維持。UIの説明文も対応 |
+
+Groundingの追加Unit Testは修正前に4件のFAIL（REVIEW_REQUIRED / ambiguous / missing / 未参照Source）を確認した。修正後は追加6件を含め、全308件PASS。正常なTRUSTED本文の保持と、保存済みContextの非変更も検証する。
+
+| 再実行した検証 | 結果 |
+| --- | --- |
+| `XDG_CACHE_HOME=/tmp/refriq-issue10-cache make fmt` / `make check` | PASS。Formatting / Lint / 全Workspace TypeScript / Vitest 7 files・308 tests / Nix flake check |
+| `pnpm --filter @refriq/web build` | PASS |
+| `node --check` | 変更したMock view / Production Browser runner / Mock Browser runnerの3 files PASS |
+| Markdown参照確認 | 変更したUX文書・review-context・review-promptのローカルリンク31件すべて存在 |
+| 本実装Browser runner | 37項目PASS、JavaScript / console Error 0件。Playwright 1.58.2 / Nix Chromium 151.0.7922.173 |
+| Mock Browser runner | 追加2項目を含む14項目PASS、JavaScript Error 0件。[結果JSON](mock-browser-results.json)を更新 |
+| `git diff --check` | PASS |
+
+本実装Browserの初回実行では37操作の後にfaviconの404を検出した。Web HTMLに空のfaviconを明示して不要なリクエストをなくし、再実行でconsole Errorも0件となった。エラーの除外・握り潰しは行っていない。
+
+本実装の[result JSON](browser-results.json)は再実行結果と完全一致のため維持した。空白・日本語Pathの検証で生成したPNGは一時Directoryに保存し、Repositoryの既存PNG 3枚・Manifestは維持した。下記の2026-10-15時点の画面資料を今回再取得したものとして扱わない。
+
 ## 結果
 
 | 検証 | 結果 |
