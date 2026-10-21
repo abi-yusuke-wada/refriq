@@ -556,9 +556,12 @@
     const section = event.target.closest("[data-section]");
     if (section) {
       event.preventDefault();
-      document
-        .getElementById(section.dataset.section)
-        ?.scrollIntoView({ behavior: "smooth" });
+      const target = document.getElementById(section.dataset.section);
+      if (target) {
+        target.tabIndex = -1;
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({ behavior: "smooth" });
+      }
       return;
     }
     const action = event.target.closest("[data-action]")?.dataset.action;

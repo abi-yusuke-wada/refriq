@@ -27,6 +27,39 @@ async function review(key) {
 }
 try {
   await check(
+    "Mock section tabs transfer keyboard focus without changing the route",
+    async () => {
+      await review("ready");
+      for (const id of [
+        "content",
+        "context",
+        "source",
+        "evaluation",
+        "diff",
+        "human",
+      ]) {
+        const tab = page.locator(`[data-section="${id}"]`);
+        await tab.focus();
+        await tab.press("Enter");
+        assert.equal(await page.evaluate(() => document.activeElement.id), id);
+        assert.equal(
+          await page.locator(`#${id}`).getAttribute("tabindex"),
+          "-1",
+        );
+        assert.equal(new URL(page.url()).hash, "#review/ready");
+      }
+      await page.locator('[data-section="source"]').focus();
+      await page.keyboard.press("Enter");
+      await page.keyboard.press("Tab");
+      assert.equal(
+        await page.evaluate(
+          () => document.activeElement.closest("#source")?.id,
+        ),
+        "source",
+      );
+    },
+  );
+  await check(
     "unresolved Candidate blocks Edit button, direct route and forged submit",
     async () => {
       await review("candidate");

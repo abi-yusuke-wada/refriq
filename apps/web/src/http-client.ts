@@ -96,23 +96,27 @@ export function createHttpReviewerClient(
         "selection",
       ].includes(key),
     );
+  async function loadCatalog(): Promise<Result<Catalog>> {
+    const result = await read<Catalog>(
+      "catalog",
+      null,
+      (value) =>
+        object(value) &&
+        string(value.certificationId) &&
+        string(value.name) &&
+        Array.isArray(value.topics) &&
+        value.topics.every(
+          (t) => object(t) && string(t.examTopicId) && string(t.name),
+        ),
+    );
+    if (result.ok) catalog = result.value;
+    return result;
+  }
+  async function ensureCatalog(): Promise<Result<Catalog>> {
+    return catalog ? { ok: true, value: catalog } : loadCatalog();
+  }
   return {
-    async catalog() {
-      const result = await read<Catalog>(
-        "catalog",
-        null,
-        (value) =>
-          object(value) &&
-          string(value.certificationId) &&
-          string(value.name) &&
-          Array.isArray(value.topics) &&
-          value.topics.every(
-            (t) => object(t) && string(t.examTopicId) && string(t.name),
-          ),
-      );
-      if (result.ok) catalog = result.value;
-      return result;
-    },
+    catalog: loadCatalog,
     queue: (input) =>
       read("queue", input, (value) =>
         page(
@@ -169,19 +173,32 @@ export function createHttpReviewerClient(
           value.evaluation === null &&
           value.requiresEvaluation === true,
       ),
-    submitFeedback: (input: FeedbackCommand) =>
-      call("submitFeedback", input, true, feedback),
-    feedbacks: (input) =>
-      read("feedbacks", input, (value) => page(value, feedback)),
-    feedback: (id) =>
-      read(
+    submitFeedback: async (input: FeedbackCommand) => {
+      const ready = await ensureCatalog();
+      if (!ready.ok) return ready;
+      return call("submitFeedback", input, true, feedback);
+    },
+    feedbacks: async (input) => {
+      const ready = await ensureCatalog();
+      if (!ready.ok) return ready;
+      return read("feedbacks", input, (value) => page(value, feedback));
+    },
+    feedback: async (id) => {
+      const ready = await ensureCatalog();
+      if (!ready.ok) return ready;
+      return read(
         "feedback",
         id,
         (value) =>
           feedback(value) && object(value) && value.examFeedbackId === id,
-      ),
-    reconcile: (input) =>
-      read(
+      );
+    },
+    reconcile: async (input) => {
+      if (input.kind === "feedback") {
+        const ready = await ensureCatalog();
+        if (!ready.ok) return ready;
+      }
+      return read(
         "reconcile",
         input,
         (value) =>
@@ -198,6 +215,7 @@ export function createHttpReviewerClient(
                     string(value.value.candidateId)
                   : value.value.questionRevisionId === input.targetId &&
                     string(value.value.questionReviewId)))),
-      ),
+      );
+    },
   };
 }

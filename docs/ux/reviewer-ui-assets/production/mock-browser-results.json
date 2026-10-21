@@ -1,7 +1,8 @@
 {
-  "checks": 14,
+  "checks": 15,
   "javaScriptErrors": 0,
   "passed": [
+    "Mock section tabs transfer keyboard focus without changing the route",
     "unresolved Candidate blocks Edit button, direct route and forged submit",
     "approved Mock sources-trusted gates",
     "approved Mock sources-review gates",

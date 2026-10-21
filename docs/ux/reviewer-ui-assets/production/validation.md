@@ -2,6 +2,34 @@
 
 実施日: 2026-10-15 UTC。対象worktree: `/tmp/refriq-issue10`、branch: `feature/10-reviewer-ui-feedback`。実装説明は[引き継ぎ](../../reviewer-implementation.md)を参照する。
 
+## PR #39の追加指摘への対応・再検証
+
+実施日: 2026-10-21 UTC。対象はCodeRabbitの2026-10-20 15:27 UTCのReviewにある3件と、FeedbackクライアントのNitpick 1件。前回の6件はCodeRabbit上でも対応済みとなっている。元RepositoryのWorking Treeへ書き込まず、GitHubから取得した同じbranchの専用checkoutで作業した。
+
+| 指摘 | 修正と確認 |
+| --- | --- |
+| Main全体の読み上げ | `main`の`aria-live`を除き、`id` / `tabindex`、見出しへのFocus移動、個別の`status` / `alert`を維持。Browserで属性・Focus・通知領域を確認。実スクリーンリーダーによる聴取確認は未実施 |
+| MockのSection Tab | Enterで各SectionへFocusとScrollを移し、Review routeを維持。Sourceへ移動後のTabがSection内のControlへ進むことを確認 |
+| Feedback文書の利用者参照 | データ表からProduction ExamFeedbackに存在しない「利用者のopaque参照」を削除。Record / DTO / Domainは変更しない |
+| Catalog取得順序への依存 | Feedback送信・一覧・詳細・照合で必要なCatalogをClient内で取得・再利用。呼び出し元に先行`catalog()`を要求しない。取得失敗時は元操作を送らずErrorを返し、書込送信後の通信断はresult unknownと同じ操作の照合で扱う |
+
+追加した10件のHTTP / Application経由Testは、修正前に10件すべてFAILを確認し、修正後は当該fileの14件すべてPASS。独立Clientでの送信・一覧・詳細・照合、Catalog cache、取得失敗・権限Error時の書込抑止、保存後の通信断から再送せず照合できることを検証する。
+
+| 再実行した検証 | 結果 |
+| --- | --- |
+| `XDG_CACHE_HOME=/tmp/refriq-issue10-cache make fmt` / `make check` | PASS。Formatting / Lint / 全Workspace TypeScript / Vitest 7 files・318 tests / Nix flake check |
+| `pnpm --filter @refriq/web build` | PASS |
+| `node --check` | Mock view / 本実装Browser runner / Mock Browser runnerの3 files PASS |
+| 本実装Browser runner | 37項目PASS、JavaScript / console Error 0件。今回のMain / Focus確認を既存項目に追加 |
+| Mock Browser runner | 15項目PASS、JavaScript Error 0件。Keyboard / Focus確認1件を追加し、[結果JSON](mock-browser-results.json)を更新 |
+| `git diff --check` | PASS |
+
+Browser環境はPlaywright 1.58.2 / Nix Chromium 151.0.7922.173。本実装runnerは空白・日本語を含む一時Pathから実行した。結果JSONは既存の[browser-results.json](browser-results.json)と一致したため維持し、生成PNGは一時Directoryへ出力した。Repositoryの既存PNG / Manifestは更新していない。
+
+### 別途確認が必要な提案
+
+CodeRabbitのReview概要にある、強制Reload / Browser終了後の未解決操作の復旧は未実装の制限として残る。現在の`Pending`はメモリ内で、画面移動・再送抑止と`beforeunload`の注意表示は行うが、再起動後に同じoperation identityを復元する保証はない。Receiptによる重複抑止は復旧参照の保持を代替しない。復旧用参照を何に保持するか、認証済みの未解決操作照会を提供するか、その所有者・終了条件をどう扱うかは今回の4件と別の設計課題とし、新しいBrowser保存方式 / API / Persistence Contractを追加していない。
+
 ## PR #39のCodeRabbit指摘対応・再検証
 
 実施日: 2026-10-20 UTC。元RepositoryのGit管理領域は読み取り専用のため、GitHubの同じbranchを`/tmp/refriq-issue10`へ取得して修正した。元RepositoryのWorking Treeは変更していない。

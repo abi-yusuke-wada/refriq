@@ -99,10 +99,19 @@ try {
       await page
         .getByRole("heading", { level: 1, name: "Review Queue" })
         .waitFor();
+      assert.equal(
+        await page.getByRole("main").getAttribute("aria-live"),
+        null,
+      );
+      assert.equal(await page.getByRole("main").getAttribute("tabindex"), "-1");
       await page.locator("tbody a").first().click();
       await page
         .getByRole("heading", { level: 1, name: "QuestionRevision Review" })
         .waitFor();
+      await page.waitForFunction(
+        () => document.activeElement?.tagName === "H1",
+      );
+      assert.equal((await page.locator('[role="status"]').count()) > 0, true);
       assert.match(
         await page.locator("#evaluation").innerText(),
         /Content \/ Context一致: 確認済み/,

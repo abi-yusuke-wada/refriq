@@ -233,7 +233,7 @@ Feedback画面には自由記述、問題文、選択肢、解答、URL、File /
 | 編集候補 | 元内容、選択可能な同一IntentのKnowledgePoint・Topic・Source、変更中Content、入力状態、新Candidate参照 | UI作業状態と既存参照。保存・ID解決は後続Use Case | 新候補作成、破棄、再評価待ちの確認。 |
 | Human確認 / 結果 | 正確な対象Revision、Reviewer、Decision、時刻、Gate結果 / Reason、公開参照 | HumanQuestionReview / Domain Gate / Lifecycle | 確認、キャンセル、記録、失敗時の再確認。 |
 | Feedback入力 / 確認 | 資格・既存Topic・固定選択肢・選択状態・Validation結果 | Certification / ExamTopic、ExamFeedbackのDomain意味、UI作業状態 | 選択、確認、戻る、送信。 |
-| Feedback一覧 / 詳細 | Feedback ID、利用者のopaque参照、資格、抽象化選択内容、提出時刻 | Immutable ExamFeedback読取 | 閲覧。内容の更新・Sourceへの変換をしない。 |
+| Feedback一覧 / 詳細 | Feedback ID、資格、抽象化選択内容、提出時刻 | Immutable ExamFeedback読取 | 閲覧。内容の更新・Sourceへの変換をしない。 |
 
 API DTO / HTTP経路 / DB Schemaは確定しない。SourceReviewの詳細読取、前Revision検索、stable ID解決、Validation記録の保存は今のPipeline出力だけでは足りず、後続Use Caseの依存である。
 

@@ -61,7 +61,7 @@ export function mountReviewerApp(
   root: HTMLElement,
   client: ReviewerClient,
 ): () => void {
-  root.innerHTML = `<header><a href="#queue" class="brand">refriq · Reviewer</a><nav aria-label="主な画面"><a href="#queue">Review Queue</a><a href="#feedback">受験Feedback入力</a><a href="#feedback-list">Feedback確認</a></nav></header><main id="reviewer-main" tabindex="-1" aria-live="polite"></main><dialog aria-labelledby="dialog-title" aria-describedby="dialog-description"></dialog>`;
+  root.innerHTML = `<header><a href="#queue" class="brand">refriq · Reviewer</a><nav aria-label="主な画面"><a href="#queue">Review Queue</a><a href="#feedback">受験Feedback入力</a><a href="#feedback-list">Feedback確認</a></nav></header><main id="reviewer-main" tabindex="-1"></main><dialog aria-labelledby="dialog-title" aria-describedby="dialog-description"></dialog>`;
   const main = root.querySelector<HTMLElement>("main");
   const dialog = root.querySelector<HTMLDialogElement>("dialog");
   if (!main || !dialog) throw new Error("reviewer root missing");
