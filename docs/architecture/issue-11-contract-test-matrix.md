@@ -21,7 +21,7 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 
 ## 2. Scenario分類
 
-各行はパラメータ化できるScenario family。primary AP36、共通K15、内部保証7、横断 / 追加40（後続Adapter / e2e各1を含む）、計98行。以下は実装予定であり今回実行していない。
+各行はパラメータ化できるScenario family。primary AP36、共通K15、内部保証7、横断 / 追加40（後続Adapter / e2e各1を含む）、計98行。TC-X-P-03の1行は後続process integrationであり、Application unit / integrationの実行Coverageへ算入しない。以下は実装予定であり今回実行していない。
 
 | 分類 | 証明するもの | 現段階 |
 | --- | --- | --- |
@@ -31,7 +31,7 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 | K / reconciliation | 全15Commandにsame-input同結果、別inputX、応答喪失、committed / confirmed uncommitted / still unknown | 共通familyを各Commandで具体化 |
 | Pagination /観測 | stable tie-break、Filter後limit、短page continuation、Context一致、初回上限、mutable Queue | 5一覧の共通Scenario |
 | 集計 / privacy | 開始時分類・Mode分離・18/20・latest1先行・非公開projection | pure calculation + Application計画 |
-| real Adapter / e2e | 実依存 / serialization / UIでの保証 | 後続。今回のDone条件にしない |
+| real Adapter / e2e / process integration | 実依存 / serialization / UI、隔離processのcrash後の状態・実行要求の観測 | 後続。今回のDone条件にしない。Application fakeでprocess crashを証明しない |
 
 ## 3. Formal AP 36の基本Scenario
 
@@ -129,7 +129,7 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 | AP-REVIEW-006, AP-REVIEW-009 | TC-X-R-07 新評価 / base不変 | new edited Candidate、旧PASS / Human、Provider開始失敗 | 新評価要求をretry | 旧評価非継承、base不変、同操作で処理増加なし。生成Inputを無検証コピーしない | Application / pure policy / projection | application integration / unit | [IMPL-07 / #38](https://github.com/abi-yusuke-wada/refriq/issues/38) |
 | AP-PIPELINE-005, AP-PIPELINE-002, AP-PIPELINE-003 | TC-X-P-01 stale worker | Attempt2がcurrent、Attempt1の結果が遅延 | 旧Stage / Candidate / Evaluation保存結果を渡す | currentを上書きしない。validated Artifact対応と成功状態のintegrityを保つ | Application / pure policy / projection | application integration / unit | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) |
 | AP-PIPELINE-005 | TC-X-P-02 FAILED / Input例外 | FAILED、前段Artifactあり / Fingerprint未成立の検証前失敗 | immutable Input変更 / 原因修正再開を試す | Fingerprint成立後の変更拒否。未成立時はP8既存例外を維持し、前段を再生成しない | Application / pure policy / projection | application integration / unit | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) |
-| AP-PIPELINE-001, AP-PIPELINE-005 | TC-X-P-03 crash Scope境界 | Stage RUNNINGのままprocess crash | 残るRun状態と再開適格性を観測 | 自動FAILED化 / 自動reclaim / retryを期待しない。manual recoveryリスクを識別し、absenceをTest failureにしない | Application / pure policy / projection | application integration / unit | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) |
+| AP-PIPELINE-001, AP-PIPELINE-005 | TC-X-P-03 crash Scope境界 | 親の観測系からRun / Stage / Attemptを読める隔離process fixture。Stage RUNNINGを観測後、worker processをcrashさせる | 自動処理の候補を一巡させる決定論的な観測区間で、残る状態・新Attempt・実行要求を観測 | crashだけではFAILED化せずRUNNINGを保持、新Attempt・自動reclaim / retry要求は0。FAILED専用Resumeは許可しない。自動遷移 / 要求や不正Resumeがあれば失敗。manual recoveryのResidual Riskを残し、自動回復の欠如自体は失敗にしない | 隔離worker process / 親の観測系 | process integration（後続） | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) |
 | AP-FEEDBACK-001 | TC-X-F-01 Similarity組合せ / forbidden input | 3観点全not_used / unknownとRating / 混在、未知field・URL参照 | 有限allowlist Validationとsubmit | 全not_used・観点別unknownは許可。not_used混在等V、Raw保存 / Logなし | Application / pure policy / projection | application integration / unit | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) |
 | AP-FEEDBACK-002 | TC-X-F-02 latest / 期間 / 同時刻 | 同Learner複数Record、期間外・同submittedAt別ID | 期間内latestをID tie-breakで選びFilter | 1 Learner1寄与、同じ版 / 観測位置で再現。分母・unknown / not_used / unansweredを識別 | Application / pure policy / projection | application integration / unit | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) |
 | AP-FEEDBACK-002, AP-FEEDBACK-003, AP-FEEDBACK-004 | TC-X-F-03 privacy / 再提出 | 内部RecordにLearner identityあり、訂正新Record | list / detail / summary / errorを出力 | identityを全公開Projectionから除き原本維持。Prompt / QuestionSourceへ変換しない | Application / pure policy / projection | application integration / unit | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) |
@@ -162,44 +162,46 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 
 ## 7. AP → Scenario / Issueの全件Coverage
 
+第3〜6節の定義を基にprimary / Kと全横断Scenarioを対応させる。共通Kは全15 Command、後続Adapter / e2eはFormal全件へ展開する。参照は実行済みCoverageを意味せず、TC-X-P-03は後続process integrationのみで検証する。
+
 | AP | Q/C | 主担当Issue | Scenario参照 |
 | --- | --- | --- | --- |
-| AP-CATALOG-001 | Q | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) | TC-AP-CATALOG-001 |
-| AP-CATALOG-002 | Q | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) | TC-AP-CATALOG-002 |
-| AP-SOURCE-001 | Q | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) | TC-AP-SOURCE-001 |
-| AP-LEARNING-001 | Q | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-001 |
-| AP-LEARNING-002 | Q | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-002 |
-| AP-LEARNING-003 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-003 |
-| AP-LEARNING-004 | C | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-004、TC-K-AP-LEARNING-004 |
-| AP-LEARNING-005 | C | [IMPL-04 / #35](https://github.com/abi-yusuke-wada/refriq/issues/35) | TC-AP-LEARNING-005、TC-K-AP-LEARNING-005 |
-| AP-LEARNING-006 | C | [IMPL-04 / #35](https://github.com/abi-yusuke-wada/refriq/issues/35) | TC-AP-LEARNING-006、TC-K-AP-LEARNING-006 |
-| AP-LEARNING-007 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-007 |
-| AP-LEARNING-008 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-008 |
-| AP-LEARNING-009 | Q | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-009 |
-| AP-LEARNING-010 | Q | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-010 |
-| AP-LEARNING-011 | C | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-011、TC-K-AP-LEARNING-011 |
-| AP-LEARNING-012 | C | [IMPL-04 / #35](https://github.com/abi-yusuke-wada/refriq/issues/35) | TC-AP-LEARNING-012、TC-K-AP-LEARNING-012 |
-| AP-LEARNING-013 | C | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-013、TC-K-AP-LEARNING-013 |
-| AP-LEARNING-014 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-014、TC-X-L-03、TC-X-L-07 |
-| AP-LEARNING-015 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-015 |
-| AP-REVIEW-001 | Q | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-001 |
-| AP-REVIEW-002 | Q | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-002、TC-X-R-01 |
-| AP-REVIEW-003 | Q | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-003、RV03-01、RV03-02、RV03-03、RV03-04 |
-| AP-REVIEW-004 | C | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-004、TC-K-AP-REVIEW-004、TC-X-R-05、RV01-01、RV02-05、TC-X-R-01 |
-| AP-REVIEW-005 | C | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-005、TC-K-AP-REVIEW-005、RV01-01、RV02-02、RV02-04、RV02-05 |
-| AP-REVIEW-006 | C | [IMPL-07 / #38](https://github.com/abi-yusuke-wada/refriq/issues/38) | TC-AP-REVIEW-006、TC-K-AP-REVIEW-006 |
-| AP-REVIEW-007 | C | [IMPL-07 / #38](https://github.com/abi-yusuke-wada/refriq/issues/38) | TC-AP-REVIEW-007、TC-K-AP-REVIEW-007、TC-X-R-06 |
-| AP-REVIEW-008 | C | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-008、TC-K-AP-REVIEW-008、RV01-01、RV02-01、RV02-03、RV02-05 |
-| AP-REVIEW-009 | C | [IMPL-07 / #38](https://github.com/abi-yusuke-wada/refriq/issues/38) | TC-AP-REVIEW-009、TC-K-AP-REVIEW-009 |
-| AP-PIPELINE-001 | Q | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-001、RV04-01、RV04-02、RV04-03 |
-| AP-PIPELINE-002 | Q | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-002 |
-| AP-PIPELINE-003 | Q | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-003 |
-| AP-PIPELINE-004 | C | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-004、TC-K-AP-PIPELINE-004 |
-| AP-PIPELINE-005 | C | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-005、TC-K-AP-PIPELINE-005、TC-X-P-02 |
-| AP-FEEDBACK-001 | C | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) | TC-AP-FEEDBACK-001、TC-K-AP-FEEDBACK-001、TC-X-F-01 |
-| AP-FEEDBACK-002 | Q | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) | TC-AP-FEEDBACK-002、TC-X-F-02 |
-| AP-FEEDBACK-003 | Q | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) | TC-AP-FEEDBACK-003 |
-| AP-FEEDBACK-004 | Q | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) | TC-AP-FEEDBACK-004 |
+| AP-CATALOG-001 | Q | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) | TC-AP-CATALOG-001、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-CATALOG-002 | Q | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) | TC-AP-CATALOG-002、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-SOURCE-001 | Q | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) | TC-AP-SOURCE-001、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-001 | Q | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-001、TC-X-PAGE-01、TC-X-PAGE-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-002 | Q | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-002、TC-X-L-05、TC-X-L-08、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-003 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-003、TC-X-L-06、TC-X-L-08、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-004 | C | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-004、TC-K-AP-LEARNING-004、TC-X-L-01、TC-X-L-02、TC-X-L-03、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-005 | C | [IMPL-04 / #35](https://github.com/abi-yusuke-wada/refriq/issues/35) | TC-AP-LEARNING-005、TC-K-AP-LEARNING-005、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-006 | C | [IMPL-04 / #35](https://github.com/abi-yusuke-wada/refriq/issues/35) | TC-AP-LEARNING-006、TC-K-AP-LEARNING-006、TC-X-L-04、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-007 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-007、TC-X-L-06、TC-X-L-08、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-008 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-008、TC-X-L-03、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-009 | Q | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-009、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-010 | Q | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-010、TC-X-L-05、TC-X-L-08、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-011 | C | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-011、TC-K-AP-LEARNING-011、TC-X-L-01、TC-X-L-02、TC-X-L-03、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-012 | C | [IMPL-04 / #35](https://github.com/abi-yusuke-wada/refriq/issues/35) | TC-AP-LEARNING-012、TC-K-AP-LEARNING-012、TC-X-L-04、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-013 | C | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) | TC-AP-LEARNING-013、TC-K-AP-LEARNING-013、TC-X-L-04、TC-X-L-05、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-014 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-014、TC-X-L-03、TC-X-L-07、TC-X-L-06、TC-X-L-08、TC-X-PAGE-01、TC-X-PAGE-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-LEARNING-015 | Q | [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) | TC-AP-LEARNING-015、TC-X-L-03、TC-X-L-08、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-REVIEW-001 | Q | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-001、TC-X-PAGE-01、TC-X-PAGE-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-REVIEW-002 | Q | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-002、TC-X-R-01、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-REVIEW-003 | Q | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-003、RV03-01、RV03-02、RV03-03、RV03-04、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-REVIEW-004 | C | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-004、TC-K-AP-REVIEW-004、TC-X-R-05、RV01-01、RV02-05、TC-X-R-01、TC-X-R-02、TC-X-R-03、TC-X-R-04、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-REVIEW-005 | C | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-005、TC-K-AP-REVIEW-005、RV01-01、RV02-02、RV02-04、RV02-05、TC-X-R-02、TC-X-R-03、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-REVIEW-006 | C | [IMPL-07 / #38](https://github.com/abi-yusuke-wada/refriq/issues/38) | TC-AP-REVIEW-006、TC-K-AP-REVIEW-006、TC-X-R-03、TC-X-R-04、TC-X-R-07、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-REVIEW-007 | C | [IMPL-07 / #38](https://github.com/abi-yusuke-wada/refriq/issues/38) | TC-AP-REVIEW-007、TC-K-AP-REVIEW-007、TC-X-R-06、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-REVIEW-008 | C | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) | TC-AP-REVIEW-008、TC-K-AP-REVIEW-008、RV01-01、RV02-01、RV02-03、RV02-05、TC-X-R-02、TC-X-R-03、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-REVIEW-009 | C | [IMPL-07 / #38](https://github.com/abi-yusuke-wada/refriq/issues/38) | TC-AP-REVIEW-009、TC-K-AP-REVIEW-009、TC-X-R-07、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-PIPELINE-001 | Q | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-001、RV04-01、RV04-02、RV04-03、TC-X-P-03、TC-X-PAGE-01、TC-X-PAGE-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-PIPELINE-002 | Q | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-002、TC-X-P-01、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-PIPELINE-003 | Q | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-003、TC-X-P-01、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-PIPELINE-004 | C | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-004、TC-K-AP-PIPELINE-004、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-PIPELINE-005 | C | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) | TC-AP-PIPELINE-005、TC-K-AP-PIPELINE-005、TC-X-P-02、TC-X-P-01、TC-X-P-03、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-FEEDBACK-001 | C | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) | TC-AP-FEEDBACK-001、TC-K-AP-FEEDBACK-001、TC-X-F-01、TC-X-K-01、TC-X-K-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-FEEDBACK-002 | Q | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) | TC-AP-FEEDBACK-002、TC-X-F-02、TC-X-F-03、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-FEEDBACK-003 | Q | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) | TC-AP-FEEDBACK-003、TC-X-F-03、TC-X-PAGE-01、TC-X-PAGE-02、TC-X-ADAPTER-01、TC-X-E2E-01 |
+| AP-FEEDBACK-004 | Q | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) | TC-AP-FEEDBACK-004、TC-X-F-03、TC-X-ADAPTER-01、TC-X-E2E-01 |
 
 | 内部保証 | Formalへ組み込むもの | Scenario | Issue |
 | --- | --- | --- | --- |

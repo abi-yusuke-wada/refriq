@@ -7,7 +7,7 @@
 
 ## 1. Repositoryの境界と配置候補
 
-[Architecture](README.md)、[ADR-0001〜0006](../adr/README.md)、[Domain](../domain/README.md)、[Source Governance](../domain/source-governance.md)、[AGENTS.md](../../AGENTS.md)を再読した。`packages/application`はP8 Orchestration / Stage DTOと`StructuredOutputProvider`を持ち、`packages/domain`は既存Source / Publish Gateを持つ。`packages/contracts/src/index.ts`は空で、外部API Contract用Workspaceである。Domain文書にある全Entityの実装済みclassが存在するとは仮定しない。
+[Architecture](README.md)、[ADR-0001〜0006](../adr/README.md)、[Domain](../domain/README.md)、[Source Governance](../domain/source-governance.md)、[AGENTS.md](../../AGENTS.md)を再読した。`packages/application`はP8 Orchestration / Stage DTOと`StructuredOutputProvider`を持ち、`packages/domain`は既存Source / Publish Gateを持つ。準備設計時の`packages/contracts/src/index.ts`は空だったが、#10 PR #39マージ後は`reviewer.ts`をexportし、Reviewer / Feedbackの共有Contractと選択肢定義をApplicationから再公開している。Domain文書にある全Entityの実装済みclassが存在するとは仮定しない。
 
 ```mermaid
 flowchart TD
@@ -19,6 +19,22 @@ flowchart TD
 ```
 
 Port型、内部facts、Application request / resultは`packages/application/src/`内の`ports / contracts`等へ置く候補。Feature Use Caseは`catalog / source / learning / review / pipeline / feedback`等の責務で整理する。名前とファイル分割は実装時に既存規約へ合わせ、今回ファイルを作らない。SDK、HTTP、認証方式は導入しない。`packages/contracts`へPipeline DTOや内部正答factsをコピーせず、外部wire DTOは後続#13等で安全なApplication出力から定義する。
+
+### 1.1 #10マージ後の既存実装と再利用（POST-05）
+
+2026-10-21時点のmain `17a0bd1f3e2fb640a37259cf0abb608539ad0777`を照合した。上記の旧調査版やHashは履歴であり、現在実装の一覧ではない。以下の状態は機能単位の読取結果であり、Formal AP全条件や実永続化の充足証明ではない。Port名・DTO案は引き続き設計案であり、既存型を無条件に置換・複製しない。
+
+| 後続Issue / 状態 | 既存実装・根拠 | 再利用と不足分 |
+| --- | --- | --- |
+| #36 ALREADY_IMPLEMENTED（部分機能） | `packages/application/src/reviewer/service.ts`のReviewerService、`validation.ts`の共通Human条件 / APPROVE固有readiness、`content.ts`のDiff、`ports.ts`のReviewerStore。`apps/api/src/reviewer.test.ts`のDecision / Source Gate試験 | 三Decision、exact Revision、N-01、max1、旧APPROVE非巻戻しを再利用。HTTP / Webは`apps/api/src/reviewer.ts`、`apps/web/src/`の既存経路へ接続する |
+| #36 PARTIALLY_IMPLEMENTED | Review詳細・Queueとdev/test用`apps/api/src/in-memory-reviewer-store.ts`、共有`packages/contracts/src/reviewer.ts` | Queueの追加Filter、前版Human Record、実依存でのcurrent / 同時確定等は未証明。公開DTOと内部factsの分離を保ち不足を補う |
+| #36 CONTRACT_MISMATCH（main読取時） | frozen IntentのSourceReference配列順がDiff / Evaluation bindingへ影響（POST-02）、Queueの対象種別を欠く順序キーが衝突（POST-04） | 別Track BのRegression修正を前提として再照合し、既存Serviceを二重実装しない。mainへ修正済みとは扱わない |
+| #38 PARTIALLY_IMPLEMENTED | ReviewerService.edit、canonicalEditCommand、validateEditDraft、ReviewerStore.edit | base Revision全Source Gate、new Candidate、旧評価非継承、同操作再送を再利用。AP-REVIEW-007 materializationとAP-REVIEW-009 reevaluationの独立実行境界はNOT_IMPLEMENTED。mappingのみを成功にしない |
+| #34 ALREADY_IMPLEMENTED（部分機能） | `reviewer/feedback.ts`の有限allowlist / version / all-or-none、ReviewerService.submitFeedback、Feedback一覧 / 詳細、共有Contract、既存HTTP / Web | immutable原本、再提出は別Record、Reviewer identity非公開を再利用 |
+| #34 CONTRACT_MISMATCH / PARTIALLY_IMPLEMENTED（main読取時） | submitFeedbackのcurrent Catalog検査が成功結果照合より先（POST-03）。既存一覧のFilterは限定的 | K修正は別Track Bで実施。list / detailの不足条件は補完。latest-per-Learner summaryはNOT_IMPLEMENTEDであり、既存単純一覧を集計充足と扱わない |
+| #33 PARTIALLY_IMPLEMENTED / NOT_IMPLEMENTED | `pipeline/question-pipeline.ts`のrunQuestionPipeline / resumeQuestionPipeline、`pipeline/validation.ts`、`apps/pipeline/src/index.test.ts` | 既存4 Stage・validated Artifact・FAILED Resumeを再利用。Waiting QueryとoperationIdベースKはNOT_IMPLEMENTED。stale worker確定拒否 / Artifact復元保証は別途補完・証明する。Production Pipelineは今回変更しない |
+
+POST-02〜04の修正はmain起点の別branchで扱い、#11のDocs-only差分へProduction / Testコードを含めない。fake / in-memoryの試験成功を#12の保証へ読み替えず、#12はFormal36 + Internal7のConsumerとして再レビューする。
 
 ## 2. 設計の単位
 

@@ -1,12 +1,12 @@
 # Issue #11に基づく後続実装Issue Plan
 
 - 状態: 実装準備の設計案。確定#11を変更せず、Application実装Issueの責務と検証を提案する。
-- 作業場所: `/tmp/refriq-issue11`、branch `feature/11-access-patterns`。既存未コミット正本を保持する。
+- 準備設計時の作業場所: `/tmp/refriq-issue11`、branch `feature/11-access-patterns`。現在の改修場所とHEADは第11節に分けて記録し、当時の入力履歴を保持する。
 - 正本: [Access Pattern Contract](issue-11-access-patterns.md)。関連案: [Port / DTO](issue-11-application-contract-draft.md)、[Test Matrix](issue-11-contract-test-matrix.md)。
 
 ## 1. 目的・境界・入力
 
-#11 Contract → Application Port / DTO → 実装Issue → Contract Testの順に落とす。Formal36（Q21 / C15）、内部保証7、H01〜H09はHuman確定済み。旧CandidateのADOPTED16 / INTERNALIZED7 / OPEN2 / DEFERRED6を維持し、Open / Deferredを実装Scopeへ含めない。準備設計時は設計文書と承認された新Issue作成までを扱った。今回のRV改修は承認済み4件の文書修正のみで、正本はRV-03の既存規則明確化を反映する。確定判断・ID・Q/Cは変更せず、Production / Adapter / API / UI / Testコード、#12 / ADR、commit / push / PR / GitHub更新は対象外。
+#11 Contract → Application Port / DTO → 実装Issue → Contract Testの順に落とす。Formal36（Q21 / C15）、内部保証7、H01〜H09はHuman確定済み。旧CandidateのADOPTED16 / INTERNALIZED7 / OPEN2 / DEFERRED6を維持し、Open / Deferredを実装Scopeへ含めない。準備設計時は設計文書と承認された新Issue作成までを扱った。RV改修時は承認済み4件の文書修正のみを行い、正本へRV-03の既存規則明確化を反映した。今回のPOST改修は第1.1 / 11節の現状追従であり、正本とTest Matrixは変更しない。確定判断・ID・Q/Cは変更せず、このDocs Track AではProduction / Adapter / API / UI / Testコード、#12 / ADR、commit / push / PR / GitHub更新を扱わない。
 
 | 入力 | 実際の読取版 | 用いる境界 |
 | --- | --- | --- |
@@ -21,6 +21,17 @@
 環境切替後（2026-10-14）、消失した専用worktree・未コミット正本・作成途中の案を当該セッションの編集記録から復元した。正本は以前のSHA-256とbyte単位で完全一致し、意味を再設計していない。#10は復元後の実ファイルを再読し、上表は現在Hashを記録する。N-01、exact Revision、matching評価、有限Feedbackの境界は確定#11と照合して維持する。#12 PlanはGitHubの上記HEADから取得した実bytesでHashを再計算した。
 
 Requirement優先順位は確定#11 → Accepted ADR → #6 / #7 → #8 → #9 → #10。実装・Fixtureは補助。旧#17のEdit即Revision化や#19のPlanning範囲を新Issueへ継承しない。これらの既存Issue本文は編集せず、後続統合で#11を優先する。#11変更が必要な設計Blockerはなし。
+
+### 1.1 mainの#10実装を再利用する責務（POST-05）
+
+2026-10-21、#10 PR #39マージ済みmain `17a0bd1`を再確認した。上表の準備設計時HEAD / Issue状態 / Hashは当時の入力履歴であり、現在状態の宣言ではない。[Port / DTO Draft第1.1節](issue-11-application-contract-draft.md#11-10マージ後の既存実装と再利用post-05)にALREADY_IMPLEMENTED / PARTIALLY_IMPLEMENTED / NOT_IMPLEMENTED / CONTRACT_MISMATCHを機能単位で整理した。以下の完成済みIssue本文も新規全面実装ではなく、既存ReviewerService / ReviewerStore / 共有Contract / HTTP・Webの再利用と不足補完として読む。実依存の保証やFormal全件充足は別途証明する。
+
+| Issue | 再利用 | 不足・改修の所有先 |
+| --- | --- | --- |
+| #36 | Decision共通条件 / APPROVE固有Gate / exact詳細 / Diff / Queue | POST-02 Diff集合比較とPOST-04 Queue全順序は別Track B。追加Filter・前版Human Record・実依存保証は#36の補完。RV-01〜03の設計は維持 |
+| #38 | 既存Edit・Source blocker・new Candidate・Edit再送 | materialization / reevaluationはNOT_IMPLEMENTED。既存Editを作り直さず成功境界と接続を追加 |
+| #34 | finite Feedback / immutable Submit / list・detail privacy | POST-03の成功再送Kは別Track B。latest-per-Learner summaryはNOT_IMPLEMENTED。追加Filter / 観測条件は#34で補完 |
+| #33 | 4 Stage実行 / Validation / FAILED Resume | Waiting Query / KはNOT_IMPLEMENTED、stale確定拒否・Artifact復元は未証明。既存Pipelineを重複実装せず補完。RV04-01〜03と自動crash recoveryのMVP除外は維持 |
 
 ## 2. 推奨Issue構成
 
@@ -607,6 +618,10 @@ Port候補: `PublishedQuestionResolver`、`LearningSessionReader`、`LearningSes
 
 Repository正本: `docs/architecture/issue-11-access-patterns.md`、SHA-256 `24a6ea4e48c50f9b56dafc31b921fbecff8946437fa447c836643f4ec5c81047`。正本は現時点で専用worktreeの未コミット文書なので、存在しないGitHub blobへリンクしない。下記のAP入出力・条件・受入条件はIssue単体でも確認できるよう記載する。設計案は `docs/architecture/issue-11-implementation-plan.md`、`issue-11-application-contract-draft.md`、`issue-11-contract-test-matrix.md`。Port名・型名は案でありAccepted ADRではない。
 
+#### 既存実装の再利用と不足（POST-05）
+
+PARTIALLY_IMPLEMENTED: runQuestionPipeline / resumeQuestionPipelineとvalidated Stage契約を再利用する。Waiting Query・operationId KはNOT_IMPLEMENTED、stale確定拒否・Artifact復元保証は未証明として補完する。RV04-01〜03は維持し、Production Pipeline修正は今回対象外。
+
 #### 目的
 
 P8の生成・FAILED再開をApplication Contractへ接続し、validated Artifactと現在Attemptを守る。
@@ -704,9 +719,11 @@ Port候補: `PipelineFactsReader`、`PipelineExecutionCommands`、`StructuredOut
 | TC-IG-CAND-SYSTEM-001 照合≠単なるnot found | commit有無不明、証拠読取不能 / foundなし | 既存Command境界でreconcile、論理時計を進める | result not found≠definitely not committed。全15 K・無自動TTL、独立Query / Port不要 |
 | TC-X-P-01 stale worker | Attempt2がcurrent、Attempt1の結果が遅延 | 旧Stage / Candidate / Evaluation保存結果を渡す | currentを上書きしない。validated Artifact対応と成功状態のintegrityを保つ |
 | TC-X-P-02 FAILED / Input例外 | FAILED、前段Artifactあり / Fingerprint未成立の検証前失敗 | immutable Input変更 / 原因修正再開を試す | Fingerprint成立後の変更拒否。未成立時はP8既存例外を維持し、前段を再生成しない |
-| TC-X-P-03 crash Scope境界 | Stage RUNNINGのままprocess crash | 残るRun状態と再開適格性を観測 | 自動FAILED化 / 自動reclaim / retryを期待しない。manual recoveryリスクを識別し、absenceをTest failureにしない |
+| TC-X-P-03 crash Scope境界 | 親の観測系からRun / Stage / Attemptを読める隔離process fixture。Stage RUNNINGを観測後、worker processをcrashさせる | 自動処理の候補を一巡させる決定論的な観測区間で、残る状態・新Attempt・実行要求を観測 | crashだけではFAILED化せずRUNNINGを保持、新Attempt・自動reclaim / retry要求は0。FAILED専用Resumeは許可しない。自動遷移 / 要求や不正Resumeがあれば失敗。manual recoveryのResidual Riskを残し、自動回復の欠如自体は失敗にしない |
 | TC-X-PAGE-01 Filter後limit / continuation | 同時刻tie、Filter除外行・重複Question・短い取得単位 | 希望limitで各一覧を歩く | Filter後件数、stable tie-break、短いpageにも必要cursor。正常終端と途中 / Dを区別 |
 | TC-X-PAGE-02 cursor Context / mutable | U1 / FilterA cursor、U2 / FilterB / 別mode、Queue出入り | cursor再利用、mutable Queueのpage2を読む | Context不一致V。Queue全page同時Snapshotとは主張せず、Commandはcurrent再検査 |
+
+TC-X-P-03は後続の隔離process integrationでのみ検証する計画であり、IMPL-08のApplication unit / integration Coverageや今回のDone条件に含めない。crash後の明示的な観測値で自動遷移・実行要求・不正Resumeを判定し、manual recoveryのResidual Riskは維持する。98 Scenario familyの総数にはこの後続計画1件を含むが、実行PASSを意味しない。
 
 ##### 承認済みRVの追加Test設計
 
@@ -753,6 +770,10 @@ Port候補: `PipelineFactsReader`、`PipelineExecutionCommands`、`StructuredOut
 [Issue #11](https://github.com/abi-yusuke-wada/refriq/issues/11)のHuman承認済みAccess Patternを実装へ移す。Formal Q21 / C15 / 36と内部保証7、H01〜H09は確定済み。本IssueはそのApplication責務の一部を担当する。
 
 Repository正本: `docs/architecture/issue-11-access-patterns.md`、SHA-256 `24a6ea4e48c50f9b56dafc31b921fbecff8946437fa447c836643f4ec5c81047`。正本は現時点で専用worktreeの未コミット文書なので、存在しないGitHub blobへリンクしない。下記のAP入出力・条件・受入条件はIssue単体でも確認できるよう記載する。設計案は `docs/architecture/issue-11-implementation-plan.md`、`issue-11-application-contract-draft.md`、`issue-11-contract-test-matrix.md`。Port名・型名は案でありAccepted ADRではない。
+
+#### 既存実装の再利用と不足（POST-05）
+
+ALREADY_IMPLEMENTED（部分機能）: finite allowlist / version・immutable Submit・安全なlist / detailを再利用する。mainの成功再送KはCONTRACT_MISMATCH（POST-03、別Track B）、summaryはNOT_IMPLEMENTED。既存HTTP / Web / 共有DTOを複製せず不足を補う。
 
 #### 目的
 
@@ -995,6 +1016,10 @@ Port候補: `LearningSessionCommands`、`LearningSessionReader`、`ExactQuestion
 [Issue #11](https://github.com/abi-yusuke-wada/refriq/issues/11)のHuman承認済みAccess Patternを実装へ移す。Formal Q21 / C15 / 36と内部保証7、H01〜H09は確定済み。本IssueはそのApplication責務の一部を担当する。
 
 Repository正本: `docs/architecture/issue-11-access-patterns.md`、SHA-256 `24a6ea4e48c50f9b56dafc31b921fbecff8946437fa447c836643f4ec5c81047`。正本は現時点で専用worktreeの未コミット文書なので、存在しないGitHub blobへリンクしない。下記のAP入出力・条件・受入条件はIssue単体でも確認できるよう記載する。設計案は `docs/architecture/issue-11-implementation-plan.md`、`issue-11-application-contract-draft.md`、`issue-11-contract-test-matrix.md`。Port名・型名は案でありAccepted ADRではない。
+
+#### 既存実装の再利用と不足（POST-05）
+
+ALREADY_IMPLEMENTED（部分機能）: ReviewerService / ReviewerStoreの三Decision、共通条件とAPPROVE固有Gate、exact詳細、N-01を再利用する。Diff集合比較とQueue全順序はmain読取時CONTRACT_MISMATCH（POST-02 / 04、別Track B）。追加Filter・前版Human Record等はPARTIALLY_IMPLEMENTEDとして補完する。RV-01〜03を維持する。
 
 #### 目的
 
@@ -1274,6 +1299,10 @@ Port候補: `LearningResultsReader`、`LearningSessionReader`、`ExactQuestionFa
 
 Repository正本: `docs/architecture/issue-11-access-patterns.md`、SHA-256 `24a6ea4e48c50f9b56dafc31b921fbecff8946437fa447c836643f4ec5c81047`。正本は現時点で専用worktreeの未コミット文書なので、存在しないGitHub blobへリンクしない。下記のAP入出力・条件・受入条件はIssue単体でも確認できるよう記載する。設計案は `docs/architecture/issue-11-implementation-plan.md`、`issue-11-application-contract-draft.md`、`issue-11-contract-test-matrix.md`。Port名・型名は案でありAccepted ADRではない。
 
+#### 既存実装の再利用と不足（POST-05）
+
+PARTIALLY_IMPLEMENTED: 既存ReviewerService.editのnew Candidate / 全Source Gate / 再送を再利用する。materialization / reevaluationはNOT_IMPLEMENTEDとして接続を追加し、Editを二重実装しない。
+
 #### 目的
 
 exact Revisionから新Candidateを作り、最大1 Domain対応と新評価を追跡する。
@@ -1459,3 +1488,37 @@ Humanが反映承認した4件のみを修正した。直前の移行で確認�
 | #29〜#38の参照Metadata | 本文に載る正本Hashを上記の現在参照へ同期する場合はHuman追加指示後。他8件のBehavior / 受入条件は変更していない |
 
 GitHub本文の編集 / comment / closeは行わない。ローカルの完成済み本文とMatrixを今回の同期案とし、Human確認後の指示を待つ。Production / Domain / Adapter / Test Code / #10 / #12 / ADRは変更しない。
+
+## 11. POST-01 / 05 / 06の一時worktree改修履歴
+
+前回2026-10-21の読み取り確認では、Remote mainは`17a0bd1f3e2fb640a37259cf0abb608539ad0777`、PR #40 Remote Headは`ec726fa93d617db977295d2bb4d1cd8208a5d6ff`。ローカル統合HEADは`a0f77a34a591003f9ecb8486bd12c0db8e2db7a6`で、mainを祖先に含む。PRの既存CI成功はec726faに対するものであり、統合HEADと今回の未コミット修正には対応しない。
+
+元Repository `/mnt/c/users/10616_wada/develop/refriq`は読み取り専用のため保持し、ローカル複製のTrack A `/tmp/refriq-post-track-a`（feature/11-access-patterns）とTrack B `/tmp/refriq-post-track-b`（fix/reviewer-post-02-04、main 17a0bd1起点）を分離した。POST-01はTrack Aの設定差分をmainと同じ内容へ限定的に戻す。元の設定は元Repositoryと`/tmp/refriq-post-original-codex-config.toml`に保持し、設定を新規採用 / 削除する判断ではない。未コミット修正を含むmainとの差分は4 Markdownのみを許容し、履歴だけの三点差分と区別する。
+
+POST-06はPENDING_REMOTE_VERIFICATION。今回commit / push / PR・Issue更新は行わない。Humanが後工程を承認した後、Track Aの設定差分除外・文書のみを明示stageし、差分を検査してcommitする。Remote feature/11-access-patternsがローカルHEADの祖先であること、mainの更新有無、Remoteの競合を再確認したうえで通常Pushする。競合時にForce Pushしない。PR #40のBase / Head・4 Markdownのみの差分・その新Headに対する必須CI成功を確認して初めてPOST-06を解消する。Track Bは別commit / 別PR工程とし、#11 branchへ混入させない。#33 / #36本文と#29〜38 Hash参照の同期は別のHuman指示待ち。
+
+## 12. 正規Repositoryへの集約とCodeRabbit対応
+
+### 正規の作業場所・移行状態
+
+正規Repositoryは`/root/develop/refriq`、branchは`feature/11-access-patterns`とする。第11節の`/mnt/c`と`/tmp`は移行前の履歴である。今回の実確認ではローカルHEAD / PR #40 Remote Headはともに`a0f77a34a591003f9ecb8486bd12c0db8e2db7a6`、Remote mainは`17a0bd1f3e2fb640a37259cf0abb608539ad0777`。a0f77a3の既存Quality gatesは成功しているが、今回の未コミット文書修正のCI証明ではない。POST-06は引き続きPENDING_REMOTE_VERIFICATIONとする。
+
+移行前にTrack A / Bの差分、未追跡Regression Test、実ファイル、HEAD、Source / Destination Hash、既存Testログを、Git管理外の`.direnv/refriq-transfer-20261021/`へ保存した。`.git/refriq-transfer/`はこの実行環境では読み取り専用のため使えなかった。`/tmp`元データは削除しない。バックアップTestはVitestが正規Testと誤認しないよう`.ts.backup`として保管し、元TestとのSHA-256一致と対応pathをmanifestへ記録する。
+
+Track AのDraft / Planは正規Repositoryへ移し、下記CodeRabbit文書修正も反映した。正本Access Patternのbyte列とHash、Formal36 / 内部7 / H01〜H09は変更しない。`.codex/config.toml`のmain内容への復帰は、承認済みPOST-01として引き続き必要だが、この環境の保護対象であり未適用である。新しいPermission Profileを採用する判断は行わない。
+
+同じ理由で`.git/index.lock`とbranch refを作成できず、Commitと正規Repository内のProduction修正branch作成は未完了。Track Bの5ファイルはバックアップに保全したが、Docs-only branchへ適用していない。正規Gitメタデータと設定の書込みが可能になった後、Track AをCommitしてCleanを確認し、main起点の`fix/reviewer-post-02-04`へTrack Bパッチと未追跡Testを適用する。移行完了とCommitを照合するまで元成果物を保持する。
+
+### CodeRabbit指摘と対応
+
+Review本体、Inline全ページ、PRのIssue形式コメントを読み取った。a0f77a3の追加レビューは差分なしでskipされており、過去のInline 5件が消えたことを意味しない。コメントは契約の根拠ではなく、確定Contractに対して照合した。
+
+| コメント / Review ID | 対象・指摘 | 判定 | 対応方針・証拠 | branch |
+| --- | --- | --- | --- | --- |
+| [4326006686](https://github.com/abi-yusuke-wada/refriq/pull/40#discussion_r4326006686) / 5586323993 | Test Matrix旧132行: crashをApplication unit / integrationとして数えている | VALID | TC-X-P-03を後続process integrationへ変更し、RUNNING保持・自動Attempt / retry要求0・不正Resume拒否の観測値を明示。Application実行Coverageへ算入しない。MVPの自動回復除外とmanual recovery risk、総98 familyは維持。#33のローカル完成済み本文も一致 | feature/11-access-patterns |
+| [4326006695](https://github.com/abi-yusuke-wada/refriq/pull/40#discussion_r4326006695) / 5586323993 | Test Matrix旧163〜164行: APへの横断Scenario参照漏れ | VALID | 第6節から全横断Scenarioを第7節へ対応させた。共通Kは15 Command、後続Adapter / e2eはFormal全件へ対応。TC-X-L-01 / 02とTC-X-P-03を含めて照合する | feature/11-access-patterns |
+| [4326432349](https://github.com/abi-yusuke-wada/refriq/pull/40#discussion_r4326432349) / 5586860691 | .codex/config.toml旧7〜8行: profileが選択されていない | NOT_APPLICABLE（profile採用は対象外） | POST-01の承認方針はprofile追加をPRから除外すること。default_permissionsを新規採用しない。現在は保護設定のため差分除去が未適用であり、解消済みとはしない | feature/11-access-patternsのPOST-01 |
+| [4326432368](https://github.com/abi-yusuke-wada/refriq/pull/40#discussion_r4326432368) / 5586860691 | 同旧8行: profileのnetwork設定がない | NOT_APPLICABLE（profile採用は対象外） | POST-01で追加profileを除外し、mainの既存network設定を維持する。設定除外は未適用 | feature/11-access-patternsのPOST-01 |
+| [4326432377](https://github.com/abi-yusuke-wada/refriq/pull/40#discussion_r4326432377) / 5586860691 | 同旧11行: 開発者固有の絶対path | NOT_APPLICABLE（profile採用は対象外） | 開発者pathを別の権限設定へ作り直さず、承認どおりPOST-01でmainとの差分をなくす。設定除外は未適用 | feature/11-access-patternsのPOST-01 |
+
+上記5件にTrack BのPOST-02〜04と同一のProduction指摘はない。GitHubへの返信・Thread Resolve・Issue本文同期・PR更新・Push・Mergeは今回行わない。Production Regressionと文書Scenarioは別の証拠とし、98 familyを実行PASSと扱わない。
