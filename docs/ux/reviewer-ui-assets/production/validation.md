@@ -2,6 +2,16 @@
 
 実施日: 2026-10-15 UTC。対象worktree: `/tmp/refriq-issue10`、branch: `feature/10-reviewer-ui-feedback`。実装説明は[引き継ぎ](../../reviewer-implementation.md)を参照する。
 
+## Mock Browser検証手順のサーバー起動・終了
+
+実施日: 2026-10-21 UTC。`3b4739a`への[CodeRabbit再レビュー](https://github.com/abi-yusuke-wada/refriq/pull/39#discussion_r4333740225)の1件を対応した。差分範囲外・Nitpickに追加指摘はない。
+
+[引き継ぎ](../../reviewer-implementation.md)のHTTPサーバーをSubshell内でバックグラウンド起動し、PIDとEXIT trapでテスト終了時に停止する手順へ修正した。既存の環境変数・本実装BrowserからMock Browserへの実行順は維持する。コード・Contract・Testは変更していない。
+
+記載したMock用Subshellを抽出し、PlaywrightとBrowserのPathだけを現在の環境に置換して実行した。Bash構文確認とMock Browser 16項目はPASS、JavaScript Errorは0件。成功後に4174番Portの待受が終了することを確認した。さらに一時的なShell関数でrunnerを終了Code 23にして、失敗Codeが維持され、サーバーも停止することを確認した。失敗を握り潰す処理は追加していない。
+
+`pnpm format:check`、`git diff --check`、UX文書のローカルリンクとManifest全7件のSHA256確認もPASS。Mock結果JSONは既存と一致し維持した。本実装Browser結果・PNGは変更していない。文書のみの変更のため、今回は`make check` / Unit Test / 本実装Browserを再実行していない。
+
 ## Mock Feedback詳細の提出者情報非表示
 
 実施日: 2026-10-21 UTC。`7f7c764`への[CodeRabbit再レビュー](https://github.com/abi-yusuke-wada/refriq/pull/39#discussion_r4333569514)の1件を対応した。Review本文・差分範囲外・Nitpickを確認し、このReviewに他の修正項目はない。

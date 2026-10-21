@@ -85,8 +85,15 @@ REFRIQ_REVIEWER_TEST_SERVER=1 pnpm --filter @refriq/web dev --port 4173 --strict
 
 ```bash
 REFRIQ_PLAYWRIGHT_MODULE=/path/to/playwright PLAYWRIGHT_BROWSERS_PATH=/path/to/browsers node apps/web/test/browser-check.mjs
-python3 -m http.server 4174 --bind 127.0.0.1 --directory .
-REFRIQ_PLAYWRIGHT_MODULE=/path/to/playwright PLAYWRIGHT_BROWSERS_PATH=/path/to/browsers node apps/web/test/mock-browser-check.mjs
+(
+  set -e
+  python3 -m http.server 4174 --bind 127.0.0.1 --directory . &
+  mock_server_pid=$!
+  trap 'kill "$mock_server_pid"' EXIT
+  REFRIQ_PLAYWRIGHT_MODULE=/path/to/playwright PLAYWRIGHT_BROWSERS_PATH=/path/to/browsers node apps/web/test/mock-browser-check.mjs
+)
 ```
+
+Mock用HTTPサーバーはバックグラウンドで起動し、テストの成功・失敗にかかわらずSubshell終了時に停止する。
 
 Playwrightを本番依存へ追加していない。環境固有のBrowser共有Library / Font設定はTest環境で行う。検証結果・実施範囲・制限は[本実装の検証記録](reviewer-ui-assets/production/validation.md)を参照。
