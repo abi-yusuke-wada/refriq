@@ -265,6 +265,55 @@ try {
         "not_used",
       );
   });
+  await check(
+    "Mock Feedback detail excludes submitter identity for seeded and new records",
+    async () => {
+      async function verifyDetail() {
+        await page
+          .getByRole("heading", { name: "受験Feedbackの詳細" })
+          .waitFor();
+        const metadata = await page.locator("#app > p").first().innerText();
+        assert.match(
+          metadata,
+          /^synthetic-feedback-[\w-]+ · \d{4}-\d{2}-\d{2}T[\d:.]+Z$/,
+        );
+        assert.doesNotMatch(
+          await page.locator("#app").innerText(),
+          /synthetic-learner/,
+        );
+        assert.equal(await page.locator("#app dd").count(), 10);
+        assert.equal(
+          await page
+            .locator(
+              "#app input, #app select, #app textarea, #app [contenteditable]",
+            )
+            .count(),
+          0,
+        );
+      }
+      await page.goto(`${base}?case=${crypto.randomUUID()}#feedback-detail/0`);
+      await verifyDetail();
+      await page.locator('header a[href="#feedback"]').click();
+      const example = await page.evaluate(
+        () => globalThis.reviewerFeedbackContract.example,
+      );
+      for (const [field, value] of Object.entries(example)) {
+        if (Array.isArray(value)) {
+          for (const item of value)
+            await page.locator(`[name="${field}"][value="${item}"]`).check();
+        } else {
+          await page.locator(`[name="${field}"]`).selectOption(String(value));
+        }
+      }
+      await page.getByRole("button", { name: "選択内容を確認する" }).click();
+      await page.locator('[data-action="send-feedback"]').click();
+      await page
+        .getByRole("heading", { name: "受験Feedbackを送信しました（Mock）" })
+        .waitFor();
+      await page.getByRole("link", { name: "Reviewerが内容を確認" }).click();
+      await verifyDetail();
+    },
+  );
   assert.deepEqual(errors, []);
   await fs.writeFile(
     new URL(

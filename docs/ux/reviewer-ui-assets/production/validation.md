@@ -2,6 +2,23 @@
 
 実施日: 2026-10-15 UTC。対象worktree: `/tmp/refriq-issue10`、branch: `feature/10-reviewer-ui-feedback`。実装説明は[引き継ぎ](../../reviewer-implementation.md)を参照する。
 
+## Mock Feedback詳細の提出者情報非表示
+
+実施日: 2026-10-21 UTC。`7f7c764`への[CodeRabbit再レビュー](https://github.com/abi-yusuke-wada/refriq/pull/39#discussion_r4333569514)の1件を対応した。Review本文・差分範囲外・Nitpickを確認し、このReviewに他の修正項目はない。
+
+Reviewer向けMock Feedbackの初期Recordと新規送信Recordから`learnerId`を除き、詳細のmetadataを`examFeedbackId`と`submittedAt`だけにした。本実装と同じく提出者情報を表示せず、既存の選択Signal全10項目・読取専用の境界を維持する。
+
+Mock Browser Testを1項目追加し、修正前は初期Recordのmetadataに提出者IDが含まれてFAILすることを確認した。修正後は初期Record・実際のフォームから送信した新規Recordの両方について、metadataがIDと提出時刻だけであること、選択Signal全10項目が表示されること、編集Controlがないことを確認してPASSした。
+
+| 再実行した検証 | 結果 |
+| --- | --- |
+| `XDG_CACHE_HOME=/tmp/refriq-issue10-cache make fmt` / `make check` | PASS。Formatting / Lint / 全Workspace TypeScript / Vitest 7 files・318 tests / 実行環境のNix flake check |
+| `node --check` | Mock view / Mock Browser runnerの2 files PASS |
+| Mock Browser runner | 16項目PASS、JavaScript Error 0件。Playwright 1.58.2 / Nix Chromium 151.0.7922.173 |
+| `git diff --check` | PASS |
+
+[Mock結果JSON](mock-browser-results.json)とManifestの対応するSHA256を更新した。本実装は変更しておらず、本実装Browser 44項目の結果JSONと既存PNG 3枚は維持した。今回、本実装Browserを再実行したとは扱わない。
+
 ## Feedback送信完了からの再入力・再読込
 
 実施日: 2026-10-21 UTC。`8ca652a`への[CodeRabbit再レビュー](https://github.com/abi-yusuke-wada/refriq/pull/39#pullrequestreview-5595464978)の1件を対応した。本文・差分範囲外・Nitpickを確認し、このReviewに他の修正項目はない。

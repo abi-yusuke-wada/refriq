@@ -1,5 +1,5 @@
 {
-  "checks": 15,
+  "checks": 16,
   "javaScriptErrors": 0,
   "passed": [
     "Mock section tabs transfer keyboard focus without changing the route",
@@ -16,6 +16,7 @@
     "approved Mock evaluation-missing allows negative decisions only",
     "Policy gate rejection closes confirmation without retry or repeated Decision IDs",
     "approved Mock confirmed failure / result unknown remain separate",
-    "approved Mock Feedback not_used all-or-none"
+    "approved Mock Feedback not_used all-or-none",
+    "Mock Feedback detail excludes submitter identity for seeded and new records"
   ]
 }

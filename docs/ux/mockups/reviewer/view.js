@@ -8,7 +8,6 @@
   let feedbackRecords = [
     {
       examFeedbackId: "synthetic-feedback-01",
-      learnerId: "synthetic-learner",
       submittedAt: "2026-10-03T00:00:00.000Z",
       payload: structuredClone(feedback.example),
     },
@@ -283,7 +282,7 @@
   function feedbackDetailView(index) {
     const record = feedbackRecords[index];
     if (!record) return notice("対象Feedbackがありません。");
-    return `${link("← Feedback一覧", "feedback-list")}<h1>受験Feedbackの詳細</h1><p>${esc(record.examFeedbackId)} · ${esc(record.submittedAt)} · ${esc(record.learnerId)}</p><section class="card">${feedbackSummary(record.payload)}</section>${notice("選択データを読み取り専用で確認します。改善判断はHumanが行い、このFeedbackから問題を自動生成・公開しません。")}<p>技術的な改善案は公式Sourceで別途確認します。提出内容は不変で、訂正する場合は新しいFeedbackを提出します。</p>`;
+    return `${link("← Feedback一覧", "feedback-list")}<h1>受験Feedbackの詳細</h1><p>${esc(record.examFeedbackId)} · ${esc(record.submittedAt)}</p><section class="card">${feedbackSummary(record.payload)}</section>${notice("選択データを読み取り専用で確認します。改善判断はHumanが行い、このFeedbackから問題を自動生成・公開しません。")}<p>技術的な改善案は公式Sourceで別途確認します。提出内容は不変で、訂正する場合は新しいFeedbackを提出します。</p>`;
   }
   function route() {
     const [screen = "queue", key] = location.hash.slice(1).split("/");
@@ -642,7 +641,6 @@
             if (!feedback.validate(payload)) return;
             feedbackRecords.push({
               examFeedbackId: `synthetic-feedback-${feedbackRecords.length + 1}`,
-              learnerId: "synthetic-learner",
               submittedAt: new Date().toISOString(),
               payload,
             });
