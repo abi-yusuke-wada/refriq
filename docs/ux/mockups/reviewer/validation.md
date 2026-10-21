@@ -28,7 +28,7 @@ Browser Runnerは初回、戻るリンクがHeaderと本文に2件あってstric
 
 ## I-01〜I-06反映時の検証（過去のEvidence）
 
-以下の152 Tests / 171項目は前回I-01〜I-06反映時の検証。最新の187 Tests / 242項目へ加算しない。Human承認済み6指摘を反映し、当時の実装を検証した。[指摘対応](../../reviewer-ui-assets/issue-10-review/review-findings.md)、[更新画面](../../reviewer-ui-assets/issue-10-review/screen-flow.md)、[UX契約](../../reviewer-ui.md)を参照。
+以下の152 Tests / 171項目は前回I-01〜I-06反映時の検証。最新の187 Tests / 242項目へ加算しない。Human承認済み6指摘を反映し、当時の実装を検証した。[指摘対応](../../reviewer-ui-assets/issue-10-review/review-findings.md)、[UX契約](../../reviewer-ui.md)を参照。画面番号は未収録の旧レビュー資料の番号であり、現在収録されている画像との対応を示さない。現在利用できる検証結果と画面は[本実装の検証記録](../../reviewer-ui-assets/production/validation.md)を参照。
 
 | 実行 / 対象 | 結果 |
 | --- | --- |

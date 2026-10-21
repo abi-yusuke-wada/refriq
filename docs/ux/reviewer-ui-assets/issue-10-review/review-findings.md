@@ -24,7 +24,7 @@ Human承認済みI-01〜I-06を維持し、今回承認されたR-01〜R-04だ�
 | I-05 | 反映・検証済み | fixtures.js、review-model.js、view.js、fixtures.test.js | 全QuestionSourceの固定Snapshot / Purpose別現在Decisionを表示。Queueは全体要約。Source Gate読取投影のeligible / blockersを利用。 | 全TRUSTED / REVIEW_REQUIRED / PROHIBITED / 重複 / 欠落を既存Domain Gateと照合。Browserで可否・全Source表示。画面43〜46 / 53。 |
 | I-06 | 反映・検証済み | feedback.js、review-model.js、view.js、styles.css | Field別理由、inline error、aria-invalid / describedby、最初の不正入力またはSummaryへのFocus。 | UnitでField別Error、BrowserでFocus・ARIA関連・Summaryリンク・Dialog cancel / disabled / statusを確認。画面49〜50。 |
 
-ファイル名は`docs/ux/mockups/reviewer/`内を指す。画面番号は[画面と操作](screen-flow.md)から参照する。Snapshotは表示証拠で、状態遷移の成功はUnit / Browserによる別検証である。
+ファイル名は`docs/ux/mockups/reviewer/`内を指す。画面番号は未収録の旧レビュー資料の番号であり、現在収録されている画像との対応を示さない。現在利用できる検証結果と画面は[本実装の検証記録](../production/validation.md)を参照する。Snapshotは表示証拠で、状態遷移の成功はUnit / Browserによる別検証である。
 
 ## 再確認した既存契約
 
