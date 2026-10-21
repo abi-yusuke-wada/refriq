@@ -188,6 +188,9 @@ export function mountReviewerApp(
         "",
       )}<p>refriq未利用は比較3項目すべてに適用します。「利用したが判断できない」は各観点で選べます。</p><button type="submit">Feedbackを確認</button></form>`;
   }
+  function renderFeedbackSent(examFeedbackId: string): string {
+    return `<h1>Feedback送信完了</h1>${note(`保存確認済み: ${examFeedbackId}`)}<p>再提出は新Recordです。既存原本は上書きしません。</p><a href="#feedback">新しいFeedbackを入力</a>`;
+  }
   function associateErrors(
     form: HTMLFormElement,
     errors: readonly FieldError[],
@@ -377,16 +380,21 @@ export function mountReviewerApp(
           ? renderEdit(detail)
           : review(detail);
       } else if (route === "feedback") page.innerHTML = renderFeedback();
-      else if (route.startsWith("feedback-detail/")) {
+      else if (
+        route.startsWith("feedback-detail/") ||
+        route.startsWith("feedback-sent/")
+      ) {
         const result = await client.feedback(
-          decodeURIComponent(route.slice("feedback-detail/".length)),
+          decodeURIComponent(route.slice(route.indexOf("/") + 1)),
         );
         if (sequence !== renderSequence) return;
         if (!result.ok) {
           error(result);
           return;
         }
-        page.innerHTML = `<h1>Feedback詳細</h1><p>${esc(result.value.examFeedbackId)} · ${esc(result.value.submittedAt)} · ${esc(result.value.feedbackContractVersion)}</p><pre>${pretty(result.value.selection)}</pre><p>immutable原本です。再提出は新Recordになります。QuestionReview・Sourceへ変換しません。</p>`;
+        page.innerHTML = route.startsWith("feedback-sent/")
+          ? renderFeedbackSent(result.value.examFeedbackId)
+          : `<h1>Feedback詳細</h1><p>${esc(result.value.examFeedbackId)} · ${esc(result.value.submittedAt)} · ${esc(result.value.feedbackContractVersion)}</p><pre>${pretty(result.value.selection)}</pre><p>immutable原本です。再提出は新Recordになります。QuestionReview・Sourceへ変換しません。</p>`;
       } else if (route === "feedback-list") {
         const result = await client.feedbacks({
           certificationId: catalog.certificationId,
@@ -499,8 +507,11 @@ export function mountReviewerApp(
         }),
         () => client.submitFeedback(command),
         async (value) => {
-          if ("examFeedbackId" in value)
-            page.innerHTML = `<h1>Feedback送信完了</h1>${note(`保存確認済み: ${value.examFeedbackId}`)}<p>再提出は新Recordです。既存原本は上書きしません。</p><a href="#feedback">新しいFeedbackを入力</a>`;
+          if ("examFeedbackId" in value) {
+            currentRoute = `#feedback-sent/${encodeURIComponent(value.examFeedbackId)}`;
+            history.replaceState(null, "", currentRoute);
+            page.innerHTML = renderFeedbackSent(value.examFeedbackId);
+          }
         },
       );
       return;

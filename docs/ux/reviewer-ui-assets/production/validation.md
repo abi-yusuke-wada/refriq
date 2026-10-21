@@ -2,6 +2,16 @@
 
 実施日: 2026-10-15 UTC。対象worktree: `/tmp/refriq-issue10`、branch: `feature/10-reviewer-ui-feedback`。実装説明は[引き継ぎ](../../reviewer-implementation.md)を参照する。
 
+## Feedback送信完了からの再入力・再読込
+
+実施日: 2026-10-21 UTC。`8ca652a`への[CodeRabbit再レビュー](https://github.com/abi-yusuke-wada/refriq/pull/39#pullrequestreview-5595464978)の1件を対応した。本文・差分範囲外・Nitpickを確認し、このReviewに他の修正項目はない。
+
+保存確定後の画面を`#feedback-sent/<examFeedbackId>`へ移し、`currentRoute`とBrowser URLを同期した。成功表示の文言は維持し、本文の「新しいFeedbackを入力」とHeaderの入力リンクが、どちらも`#feedback`への実際の遷移となるようにした。再読込では既存のFeedback読取を使って保存済みRecordを確認し、再送しない。存在しないIDを送信完了と表示しない。結果不明の間は完了URLへ進まず、同じ操作の照合で保存済みと確認した後に進む。
+
+Browser Testは初回の入力だけにページ遷移を使い、成功画面からはquery変更・Reloadをせず実際のリンクを操作する。修正前にはフォームへ戻れないTimeoutを再現した。修正後は本文リンク・Headerリンク・結果照合後の再入力・完了URL再読込の4項目を追加し、全44項目PASS、JavaScript / console Error 0件。再提出が別Recordになり、元Recordが不変であること、再読込で件数が増えないこと、不明なIDの完了URLでは取得Errorになることも確認した。
+
+`XDG_CACHE_HOME=/tmp/refriq-issue10-cache make fmt`、`make check`（7 files・318 tests / TypeScript / Lint / Formatting / Nix）、Web production build、Browser runnerの`node --check`、`git diff --check`はPASS。[本実装Browser結果](browser-results.json)を44項目へ更新した。生成PNGは一時Directoryへ保存し、既存PNGは維持した。Evidenceの最終内容に対してManifestを再生成・全件照合する。Mockコードは変更せず、この回はMock Browser runnerを再実行していない。
+
 ## PR #39の差分範囲外の指摘への対応
 
 実施日: 2026-10-21 UTC。`3c18d74`への[CodeRabbit再レビュー](https://github.com/abi-yusuke-wada/refriq/pull/39#pullrequestreview-5594829446)で追加されたOut-of-diff 1件を確認した。過去2回のReview本文にも同分類の未対応項目はないことを確認した。

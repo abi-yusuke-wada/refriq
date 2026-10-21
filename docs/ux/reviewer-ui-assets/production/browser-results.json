@@ -1,5 +1,5 @@
 {
-  "checks": 40,
+  "checks": 44,
   "javaScriptErrors": 0,
   "passed": [
     "Queue → exact Revision; Candidate metadata separated; matching Evaluation",
@@ -41,6 +41,10 @@
     "Edit preserves readonly type / language / difficulty",
     "Post-decision stale response is discarded: route-success",
     "Post-decision stale response is discarded: route-error",
-    "Post-decision stale response is discarded: refresh-error"
+    "Post-decision stale response is discarded: refresh-error",
+    "Feedback success returns to a fresh form without reload: body",
+    "Feedback success returns to a fresh form without reload: header",
+    "Feedback success returns to a fresh form without reload: reconciled",
+    "Feedback success URL reload verifies the saved record without resubmitting"
   ]
 }

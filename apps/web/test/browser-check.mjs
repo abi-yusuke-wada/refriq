@@ -68,8 +68,9 @@ async function done() {
   await dialogAction("done").waitFor({ state: "visible" });
   await dialogAction("done").click();
 }
-async function fillFeedback(values = {}) {
-  await page.goto(`${base}/?case=${crypto.randomUUID()}#feedback`);
+async function fillFeedback(values = {}, navigate = true) {
+  if (navigate)
+    await page.goto(`${base}/?case=${crypto.randomUUID()}#feedback`);
   await page.locator("#feedback-form").waitFor();
   for (const [name, value] of Object.entries({
     certificationId: "synthetic-cloud-associate",
@@ -698,6 +699,109 @@ try {
         }
       },
     );
+  for (const entry of ["body", "header", "reconciled"])
+    await check(
+      `Feedback success returns to a fresh form without reload: ${entry}`,
+      async () => {
+        await control("reset");
+        await fillFeedback();
+        if (entry === "reconciled")
+          await control("fault", { fault: "unknown-committed" });
+        await page.getByRole("button", { name: "Feedbackを確認" }).click();
+        await dialogAction("save").click();
+        if (entry === "reconciled") {
+          await dialogAction("reconcile").waitFor({ state: "visible" });
+          assert.equal(new URL(page.url()).hash, "#feedback");
+          await dialogAction("reconcile").click();
+        }
+        await done();
+        const request = {
+          certificationId: "synthetic-cloud-associate",
+          limit: 20,
+        };
+        const before = await rpc("feedbacks", request);
+        assert.equal(before.value.items.length, 1);
+        const first = before.value.items[0];
+        const query = new URL(page.url()).search;
+        const marker = crypto.randomUUID();
+        await page.evaluate((value) => {
+          window.feedbackNavigationMarker = value;
+        }, marker);
+        if (entry === "header")
+          await page.locator('header a[href="#feedback"]').click();
+        else
+          await page
+            .getByRole("link", { name: "新しいFeedbackを入力" })
+            .click();
+        await page.locator("#feedback-form").waitFor();
+        assert.equal(new URL(page.url()).hash, "#feedback");
+        assert.equal(new URL(page.url()).search, query);
+        assert.equal(
+          await page.evaluate(() => window.feedbackNavigationMarker),
+          marker,
+        );
+        assert.equal(
+          await page.locator('[name="difficulty"]').inputValue(),
+          "",
+        );
+        await fillFeedback({ difficulty: "3" }, false);
+        await page.getByRole("button", { name: "Feedbackを確認" }).click();
+        await dialogAction("save").click();
+        await done();
+        const after = await rpc("feedbacks", request);
+        assert.equal(after.value.items.length, 2);
+        assert.deepEqual(
+          after.value.items.find(
+            (f) => f.examFeedbackId === first.examFeedbackId,
+          ),
+          first,
+        );
+        assert.equal(
+          after.value.items.find(
+            (f) => f.examFeedbackId !== first.examFeedbackId,
+          ).selection.difficulty,
+          3,
+        );
+      },
+    );
+  await check(
+    "Feedback success URL reload verifies the saved record without resubmitting",
+    async () => {
+      await control("reset");
+      await fillFeedback();
+      await page.getByRole("button", { name: "Feedbackを確認" }).click();
+      await dialogAction("save").click();
+      await done();
+      const request = {
+        certificationId: "synthetic-cloud-associate",
+        limit: 20,
+      };
+      const saved = (await rpc("feedbacks", request)).value.items[0];
+      const hash = `#feedback-sent/${encodeURIComponent(saved.examFeedbackId)}`;
+      assert.equal(new URL(page.url()).hash, hash);
+      await page.reload();
+      await page
+        .getByRole("heading", { level: 1, name: "Feedback送信完了" })
+        .waitFor();
+      assert.match(
+        await page.locator("main").innerText(),
+        new RegExp(saved.examFeedbackId),
+      );
+      assert.equal(new URL(page.url()).hash, hash);
+      assert.deepEqual((await rpc("feedbacks", request)).value.items, [saved]);
+      await page.evaluate(() => {
+        location.hash = "#feedback-sent/not-a-saved-record";
+      });
+      await page
+        .getByRole("heading", { level: 1, name: "処理を確認できません" })
+        .waitFor();
+      assert.equal(
+        await page.getByRole("heading", { name: "Feedback送信完了" }).count(),
+        0,
+      );
+      assert.deepEqual((await rpc("feedbacks", request)).value.items, [saved]);
+    },
+  );
   assert.deepEqual(errors, []);
   await fs.writeFile(
     new URL("browser-results.json", output),
