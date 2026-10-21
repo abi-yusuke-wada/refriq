@@ -436,7 +436,11 @@ export function mountReviewerApp(
   }
   async function afterDecision() {
     if (detail) {
+      const route = location.hash || "#queue";
+      const sequence = renderSequence;
       const result = await client.detail(detail.record.questionRevisionId);
+      if (route !== (location.hash || "#queue") || sequence !== renderSequence)
+        return;
       if (result.ok) {
         detail = result.value;
         page.innerHTML = review(detail);

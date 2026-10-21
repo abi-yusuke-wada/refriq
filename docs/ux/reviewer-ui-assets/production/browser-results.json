@@ -1,5 +1,5 @@
 {
-  "checks": 37,
+  "checks": 40,
   "javaScriptErrors": 0,
   "passed": [
     "Queue → exact Revision; Candidate metadata separated; matching Evaluation",
@@ -38,6 +38,9 @@
     "Feedback all not_used persists as three distinct N/A signals",
     "Unsaved Edit survives current-state refresh",
     "Unresolved Candidate queue preview is separate from Human Review",
-    "Edit preserves readonly type / language / difficulty"
+    "Edit preserves readonly type / language / difficulty",
+    "Post-decision stale response is discarded: route-success",
+    "Post-decision stale response is discarded: route-error",
+    "Post-decision stale response is discarded: refresh-error"
   ]
 }

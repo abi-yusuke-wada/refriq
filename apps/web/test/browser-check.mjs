@@ -615,6 +615,89 @@ try {
       );
     },
   );
+  for (const scenario of ["route-success", "route-error", "refresh-error"])
+    await check(
+      `Post-decision stale response is discarded: ${scenario}`,
+      async () => {
+        await reset();
+        let holdNextDetail = true;
+        let release;
+        const released = new Promise((resolve) => {
+          release = resolve;
+        });
+        const handler = async (route) => {
+          if (
+            route.request().postDataJSON().operation !== "detail" ||
+            !holdNextDetail
+          )
+            return route.continue();
+          holdNextDetail = false;
+          const response =
+            scenario === "route-success" ? await route.fetch() : null;
+          await released;
+          await route.fulfill(
+            response
+              ? { response }
+              : {
+                  json: {
+                    ok: false,
+                    error: {
+                      code: "SYSTEM_ERROR",
+                      message: "遅延した取得失敗（検証用）",
+                      fields: [],
+                    },
+                  },
+                },
+          );
+        };
+        await page.route("**/api/reviewer", handler);
+        try {
+          const requested = page.waitForRequest(
+            (request) =>
+              request.url().endsWith("/api/reviewer") &&
+              request.postDataJSON().operation === "detail",
+          );
+          await confirm("approve");
+          const delayedRequest = await requested;
+          await done();
+          if (scenario === "refresh-error") {
+            await action("refresh").click();
+            await page
+              .getByRole("heading", {
+                level: 1,
+                name: "QuestionRevision Review",
+              })
+              .waitFor();
+            assert.match(await page.locator("#human").innerText(), /APPROVE/);
+          } else {
+            await page.locator('header a[href="#feedback"]').click();
+            await page.locator("#feedback-form").waitFor();
+          }
+          const returned = page.waitForResponse(
+            (response) => response.request() === delayedRequest,
+          );
+          release();
+          await (await returned).finished();
+          await page.evaluate(
+            () =>
+              new Promise((resolve) => requestAnimationFrame(() => resolve())),
+          );
+          if (scenario === "refresh-error") {
+            assert.equal(
+              await page.getByRole("heading", { level: 1 }).innerText(),
+              "QuestionRevision Review",
+            );
+            assert.match(await page.locator("#human").innerText(), /APPROVE/);
+          } else {
+            assert.equal(new URL(page.url()).hash, "#feedback");
+            assert.equal(await page.locator("#feedback-form").count(), 1);
+          }
+        } finally {
+          release();
+          await page.unroute("**/api/reviewer", handler);
+        }
+      },
+    );
   assert.deepEqual(errors, []);
   await fs.writeFile(
     new URL("browser-results.json", output),

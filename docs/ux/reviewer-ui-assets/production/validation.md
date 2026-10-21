@@ -2,6 +2,20 @@
 
 実施日: 2026-10-15 UTC。対象worktree: `/tmp/refriq-issue10`、branch: `feature/10-reviewer-ui-feedback`。実装説明は[引き継ぎ](../../reviewer-implementation.md)を参照する。
 
+## PR #39の差分範囲外の指摘への対応
+
+実施日: 2026-10-21 UTC。`3c18d74`への[CodeRabbit再レビュー](https://github.com/abi-yusuke-wada/refriq/pull/39#pullrequestreview-5594829446)で追加されたOut-of-diff 1件を確認した。過去2回のReview本文にも同分類の未対応項目はないことを確認した。
+
+`afterDecision()`が取得待ちの間に画面移動・再取得が起きても、古い応答で現在の画面や`detail`を上書きしないようにした。取得開始時のURLと`renderSequence`を保持し、応答後にどちらかが変わっていれば成功応答・失敗応答とも破棄する。保存自体やHuman decision / Domain Gateは変更しない。
+
+Browserで判断後のdetail応答を保留し、先にFeedback画面へ移動した後で応答を返すケースを追加した。修正前は移動先のformが消えるFAILを再現した。修正後は以下3件を含む40項目PASS、JavaScript / console Error 0件となった。
+
+- 遅い成功応答が移動先のFeedback画面を上書きしない。
+- 遅い失敗応答も移動先の画面をErrorへ置き換えない。
+- 同じURLで新しい再取得が成功した後、古い失敗応答が最新のReviewを上書きしない。
+
+`XDG_CACHE_HOME=/tmp/refriq-issue10-cache make fmt`、`make check`（7 files・318 tests / TypeScript / Lint / Formatting / Nix）、Web production build、Browser runnerの`node --check`、`git diff --check`はPASS。[本実装Browser結果](browser-results.json)を40項目へ更新した。Browser環境はPlaywright 1.58.2 / Chromium 151。既存PNG / Manifestを維持し、Snapshotだけを競合防止の証明にしていない。Mockコードは変更しておらず、この回はMock Browser runnerを再実行していない。
+
 ## PR #39の追加指摘への対応・再検証
 
 実施日: 2026-10-21 UTC。対象はCodeRabbitの2026-10-20 15:27 UTCのReviewにある3件と、FeedbackクライアントのNitpick 1件。前回の6件はCodeRabbit上でも対応済みとなっている。元RepositoryのWorking Treeへ書き込まず、GitHubから取得した同じbranchの専用checkoutで作業した。
