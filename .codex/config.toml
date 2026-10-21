@@ -1,11 +1,5 @@
 approval_policy = "never"
-default_permissions = "refriq-git"
+sandbox_mode = "workspace-write"
 
-[permissions.refriq-git]
-extends = ":workspace"
-
-[permissions.refriq-git.filesystem.":workspace_roots"]
-".git" = "write"
-
-[permissions.refriq-git.network]
-enabled = true
+[sandbox_workspace_write]
+network_access = true
