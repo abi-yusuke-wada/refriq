@@ -18,7 +18,17 @@ importers:
         specifier: 4.1.11
         version: 4.1.11(vite@8.2.2)
 
-  apps/api: {}
+  apps/api:
+    dependencies:
+      '@refriq/application':
+        specifier: workspace:*
+        version: link:../../packages/application
+      '@refriq/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@refriq/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
 
   apps/pipeline:
     dependencies:
@@ -29,7 +39,15 @@ importers:
         specifier: workspace:*
         version: link:../../packages/domain
 
-  apps/web: {}
+  apps/web:
+    dependencies:
+      '@refriq/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+    devDependencies:
+      vite:
+        specifier: 8.2.2
+        version: 8.2.2
 
   packages/application:
     dependencies:
@@ -40,7 +58,14 @@ importers:
         specifier: ^8.17.1
         version: 8.20.0
 
-  packages/contracts: {}
+  packages/contracts:
+    dependencies:
+      '@refriq/application':
+        specifier: workspace:*
+        version: link:../application
+      '@refriq/domain':
+        specifier: workspace:*
+        version: link:../domain
 
   packages/domain: {}
 

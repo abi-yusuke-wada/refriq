@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>refriq · Reviewerと受験Feedback</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="fixtures.js" defer></script>
+    <script src="feedback.js" defer></script>
+    <script src="review-model.js" defer></script>
+    <script src="view.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#queue">refriq <span>Reviewer</span></a>
+      <nav aria-label="主な画面">
+        <a href="#queue">Review Queue</a>
+        <a href="#feedback">受験Feedback入力</a>
+        <a href="#feedback-list">Feedback確認</a>
+      </nav>
+    </header>
+    <aside class="design" aria-label="設計レビュー用の状態切替">
+      <strong>Static Mock · 架空データ / 保存・公開は模擬動作</strong>
+      <label>設計検証の状態
+        <select id="state">
+          <option value="normal">通常</option>
+          <option value="loading">取得中</option>
+          <option value="empty">空</option>
+          <option value="fetch-error">取得失敗</option>
+          <option value="save-error">保存・送信の確定失敗</option>
+          <option value="save-unknown-saved">結果不明 → 照合で保存済み</option>
+          <option value="save-unknown-unsaved">結果不明 → 照合で未保存確定</option>
+          <option value="policy-changed">承認確認後のPolicy変更を再生</option>
+        </select>
+      </label>
+      <button id="reset" type="button">Mockを初期化</button>
+      <small>操作結果はこのページのメモリ内だけで保持。Reloadで初期化します。</small>
+    </aside>
+    <main id="app" tabindex="-1"></main>
+    <dialog id="confirm" aria-labelledby="confirm-title"></dialog>
+    <noscript>この操作Mockの再生にはJavaScriptが必要です。UX文書でフローを確認できます。</noscript>
+  </body>
+</html>

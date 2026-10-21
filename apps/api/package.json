@@ -4,5 +4,10 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@refriq/application": "workspace:*",
+    "@refriq/contracts": "workspace:*",
+    "@refriq/domain": "workspace:*"
   }
 }
