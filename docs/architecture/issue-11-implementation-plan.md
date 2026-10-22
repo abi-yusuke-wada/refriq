@@ -250,7 +250,7 @@ Port候補: `ExactQuestionFactsReader`
 | Scenario | Given | When | Then |
 | --- | --- | --- | --- |
 | TC-X-L-08 owner / 解禁のnegative control | 他ownerのSession、全正答field入り内部facts | 各Learner Query / ack / errorを構築 | 所有者境界を守り、未解禁採点情報・Source・Reviewer内部Fieldを出力に含めない |
-| TC-X-K-01 Actor / kind / semantic集合 | 同operationIdの別Actor / 別kind、同Options集合の並び替え | 各Command boundaryで照合 / 正規化 | 別Actor結果を漏らさずkindも区別。集合順のみ同意味、順序が意味を持つContentは変更扱い |
+| TC-X-K-01 Actor / kind / semantic集合・初回同時実行 | 同operationIdの別Actor / 別kind、同Options集合の並び替え。既存の確定結果がない同一Actor / kind / operationId / semantic inputの2要求も用意 | 各Command boundaryで照合 / 正規化。両lookupが未確定を観測した後に同操作の初回確定を並行させる | 別Actor結果を漏らさずkindも区別。集合順のみ同意味、順序が意味を持つContentは変更扱い。同操作のcommitted result identityは最大1で、応答喪失時の照合も含め両要求は同じidentityへ解決する。logical fakeで順序を制御し、物理的同時確定の証明は後続#12 / Adapterへ委譲 |
 | TC-X-K-02 証拠の無自動TTL | 成功証拠あり、時計進行・Use Case instance再生成、同logical stateを保持 | same-operationを再照合 | 同committed結果、期限経過で新操作にしない。fake modelは物理持続性を証明しない |
 
 #### 受入条件
@@ -334,7 +334,7 @@ Port候補: 共通Harnessのみ。Feature Port fakeは各担当Issue。
 
 | Scenario | Given | When | Then |
 | --- | --- | --- | --- |
-| TC-X-K-01 Actor / kind / semantic集合 | 同operationIdの別Actor / 別kind、同Options集合の並び替え | 各Command boundaryで照合 / 正規化 | 別Actor結果を漏らさずkindも区別。集合順のみ同意味、順序が意味を持つContentは変更扱い |
+| TC-X-K-01 Actor / kind / semantic集合・初回同時実行 | 同operationIdの別Actor / 別kind、同Options集合の並び替え。既存の確定結果がない同一Actor / kind / operationId / semantic inputの2要求も用意 | 各Command boundaryで照合 / 正規化。両lookupが未確定を観測した後に同操作の初回確定を並行させる | 別Actor結果を漏らさずkindも区別。集合順のみ同意味、順序が意味を持つContentは変更扱い。同操作のcommitted result identityは最大1で、応答喪失時の照合も含め両要求は同じidentityへ解決する。logical fakeで順序を制御し、物理的同時確定の証明は後続#12 / Adapterへ委譲 |
 | TC-X-K-02 証拠の無自動TTL | 成功証拠あり、時計進行・Use Case instance再生成、同logical stateを保持 | same-operationを再照合 | 同committed結果、期限経過で新操作にしない。fake modelは物理持続性を証明しない |
 
 #### 受入条件

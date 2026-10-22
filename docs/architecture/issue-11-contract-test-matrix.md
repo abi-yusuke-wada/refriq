@@ -1,10 +1,10 @@
-# Issue #11 Application ContractのTest Matrix
+# Issue #11 Application Contractのテストマトリクス
 
 - 状態: 未実装のTest設計。Scenario familyを列挙し、Test関数数や実行PASSを示さない。
 - 正本: [確定Access Pattern](issue-11-access-patterns.md)、SHA-256 `24a6ea4e48c50f9b56dafc31b921fbecff8946437fa447c836643f4ec5c81047`。Formal Q21 / C15 / 36、内部7、K対象15。
 - 対応案: [実装Issue Plan](issue-11-implementation-plan.md)、[Port / DTO Draft](issue-11-application-contract-draft.md)。
 
-## 1. 証明の責務とHarness設計
+## 1. 証明の責務と検証基盤の設計
 
 unitはRule / projection / 計算、contractはPort越しUse Caseの要求、application integrationは複数Use Case・fake間の成功 / 失敗・並行 / 応答喪失を証明する。後続real Adapter contractはcurrent・同時確定・R・Evidenceの持続性・Artifact復元を実環境で証明し、後続e2eはHTTP / UI変換でも解禁・owner・ack・再送を保つ。logical fakeは実Storeの挙動を模造して#12保証済みにしない。
 
@@ -19,7 +19,7 @@ unitはRule / projection / 計算、contractはPort越しUse Caseの要求、app
 
 Use Caseとfakeで同一の業務判定関数を共有して証明を循環させない。正常 / 不正常factsを投入し、出力allowlist・Domain結果・公開事実を独立に検査する。並行ケースは実時間sleepではなく順序制御で再現する。実試験本文・Exam Dump・流出 / 再現問題をFixture / Prompt / Logに使わず、安全な架空Contentで検証する。
 
-## 2. Scenario分類
+## 2. シナリオ分類
 
 各行はパラメータ化できるScenario family。primary AP36、共通K15、内部保証7、横断 / 追加40（後続Adapter / e2e各1を含む）、計98行。TC-X-P-03の1行は後続process integrationであり、Application unit / integrationの実行Coverageへ算入しない。以下は実装予定であり今回実行していない。
 
@@ -33,9 +33,9 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 | 集計 / privacy | 開始時分類・Mode分離・18/20・latest1先行・非公開projection | pure calculation + Application計画 |
 | real Adapter / e2e / process integration | 実依存 / serialization / UI、隔離processのcrash後の状態・実行要求の観測 | 後続。今回のDone条件にしない。Application fakeでprocess crashを証明しない |
 
-## 3. Formal AP 36の基本Scenario
+## 3. 正式AP 36の基本シナリオ
 
-| AP / Guarantee | Scenario | Given | When | Then | Layer | Test Type | Issue |
+| AP / 内部保証 | シナリオ | 前提 | 操作 | 期待結果 | 検証層 | 検証種別 | 担当Issue |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | AP-CATALOG-001 | TC-AP-CATALOG-001 資格一覧 / 依存失敗 | MVP資格C1のみ、readerの成功 / unavailable | 資格一覧を取得 | 1件のみ。依存失敗はD、正常Emptyにしない | Application / Port | contract | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) |
 | AP-CATALOG-002 | TC-AP-CATALOG-002 資格内Topic / 所属 | C1所属8 Topic、同じ表示順のT1 / T2 | C1詳細を取得、別資格所属参照も試す | 8件を表示順＋ID順。不存在N / 所属不正V / 依存失敗D | Application / Port | contract | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) |
@@ -78,7 +78,7 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 
 各CommandのK行はsame / different semantic inputと三照合結果の独立caseへ展開する。生成ID・時計・Provider outputを入力同一性に混ぜない。構造的に不正なRequestのVと、構造は妥当だが同IDに別business inputを使うXを分ける。新規状態判定より既成功照合が先。結果不明のまま別operation / Decisionへ切り替えない。
 
-| AP / Guarantee | Scenario | Given | When | Then | Layer | Test Type | Issue |
+| AP / 内部保証 | シナリオ | 前提 | 操作 | 期待結果 | 検証層 | 検証種別 | 担当Issue |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | AP-LEARNING-004 | TC-K-AP-LEARNING-004 K / Conflict / 結果不明 | 同Actor / kind / operationIdの確定結果あり。元Request保持、commit後応答喪失と未保存 / 照合不能を別注入 | same semantic input再送 / certificationId変更 / same-operation照合 | 同input→同committed result ID / 時点、別input→X。既成功照合が旧expected競合より先。committed / confirmed uncommitted / still unknownを区別、未保存推測・別ID再実行なし | Application / Port | contract / application integration | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) |
 | AP-LEARNING-005 | TC-K-AP-LEARNING-005 K / Conflict / 結果不明 | 同Actor / kind / operationIdの確定結果あり。元Request保持、commit後応答喪失と未保存 / 照合不能を別注入 | same semantic input再送 / selectedOptionIds変更 / same-operation照合 | 同input→同committed result ID / 時点、別input→X。既成功照合が旧expected競合より先。committed / confirmed uncommitted / still unknownを区別、未保存推測・別ID再実行なし | Application / Port | contract / application integration | [IMPL-04 / #35](https://github.com/abi-yusuke-wada/refriq/issues/35) |
@@ -96,9 +96,9 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 | AP-PIPELINE-005 | TC-K-AP-PIPELINE-005 K / Conflict / 結果不明 | 同Actor / kind / operationIdの確定結果あり。元Request保持、commit後応答喪失と未保存 / 照合不能を別注入 | same semantic input再送 / Run / 再開Input変更 / same-operation照合 | 同input→同committed result ID / 時点、別input→X。既成功照合が旧expected競合より先。committed / confirmed uncommitted / still unknownを区別、未保存推測・別ID再実行なし | Application / Port | contract / application integration | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) |
 | AP-FEEDBACK-001 | TC-K-AP-FEEDBACK-001 K / Conflict / 結果不明 | 同Actor / kind / operationIdの確定結果あり。元Request保持、commit後応答喪失と未保存 / 照合不能を別注入 | same semantic input再送 / 有限選択変更 / same-operation照合 | 同input→同committed result ID / 時点、別input→X。既成功照合が旧expected競合より先。committed / confirmed uncommitted / still unknownを区別、未保存推測・別ID再実行なし | Application / Port | contract / application integration | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) |
 
-## 5. Internal Guarantee 7
+## 5. 内部保証7件
 
-| AP / Guarantee | Scenario | Given | When | Then | Layer | Test Type | Issue |
+| AP / 内部保証 | シナリオ | 前提 | 操作 | 期待結果 | 検証層 | 検証種別 | 担当Issue |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | CAND-REVIEW-001 | TC-IG-CAND-REVIEW-001 previous / Human / Diff base | 系列qr1→qr2、初版 / 必須previous欠損 | 詳細とDiffを読む | exact前版とHuman Recordを対応。欠損≠初版 / 差分なし | Application / Port | contract | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) |
 | CAND-PIPELINE-001 | TC-IG-CAND-PIPELINE-001 Run / Input / Artifact対応 | 複数Runのcurrent Stage・Input・Artifact | waiting / Candidate / Resume前提を読む | 同Runの現在状態とimmutable Inputを内部解決、別Runのartifactを混ぜない | Application / Port | contract | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) |
@@ -108,9 +108,9 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 | CAND-SOURCE-001 | TC-IG-CAND-SOURCE-001 current / 歴史 / N-01 / N-02 | 取得時TRUSTED、current変更 / 重複ID意味不整合 / missing | 全Source現在取得後、確定直前にPolicy変更 | Snapshot不変、Source Gateで拒否。blocker解消後は対象＋current再読、同一ID内容の不整合を検出 | Application / Port | contract | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) / [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) / [IMPL-07 / #38](https://github.com/abi-yusuke-wada/refriq/issues/38) / [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) |
 | CAND-SYSTEM-001 | TC-IG-CAND-SYSTEM-001 照合≠単なるnot found | commit有無不明、証拠読取不能 / foundなし | 既存Command境界でreconcile、論理時計を進める | result not found≠definitely not committed。全15 K・無自動TTL、独立Query / Port不要 | Application / Port | contract | [IMPL-01 / #29](https://github.com/abi-yusuke-wada/refriq/issues/29) / [IMPL-10 / #30](https://github.com/abi-yusuke-wada/refriq/issues/30) / [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) / [IMPL-04 / #35](https://github.com/abi-yusuke-wada/refriq/issues/35) / [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) / [IMPL-07 / #38](https://github.com/abi-yusuke-wada/refriq/issues/38) / [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) / [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) |
 
-## 6. Failure・競合・情報境界・後続証明
+## 6. 失敗・競合・情報境界・後続検証
 
-| AP / Guarantee | Scenario | Given | When | Then | Layer | Test Type | Issue |
+| AP / 内部保証 | シナリオ | 前提 | 操作 | 期待結果 | 検証層 | 検証種別 | 担当Issue |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | AP-LEARNING-004, AP-LEARNING-011 | TC-X-L-01 不完全不足 / 不足確認失敗 | E一覧Q9、未取得page、current読取失敗 / freshness不明 | Session開始を試す | D / unresolved、S不足や成功Sessionにしない | Application / pure policy / projection | application integration / unit | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) |
 | AP-LEARNING-004, AP-LEARNING-011 | TC-X-L-02 同時開始 / 公開変更 | 同User資格modeの並行start、選択中にpublished ref変更 | 二startと確定前変更を順序制御 | Active最大1、current条件競合検知、部分Snapshotなし。Practice / Mock別枠 | Application / pure policy / projection | application integration / unit | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) |
@@ -135,16 +135,16 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 | AP-FEEDBACK-002, AP-FEEDBACK-003, AP-FEEDBACK-004 | TC-X-F-03 privacy / 再提出 | 内部RecordにLearner identityあり、訂正新Record | list / detail / summary / errorを出力 | identityを全公開Projectionから除き原本維持。Prompt / QuestionSourceへ変換しない | Application / pure policy / projection | application integration / unit | [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) |
 | AP-LEARNING-001, AP-REVIEW-001, AP-LEARNING-014, AP-PIPELINE-001, AP-FEEDBACK-003 | TC-X-PAGE-01 Filter後limit / continuation | 同時刻tie、Filter除外行・重複Question・短い取得単位 | 希望limitで各一覧を歩く | Filter後件数、stable tie-break、短いpageにも必要cursor。正常終端と途中 / Dを区別 | Application / pure policy / projection | application integration / unit | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) / [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) / [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) / [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) / [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) |
 | AP-LEARNING-001, AP-REVIEW-001, AP-LEARNING-014, AP-PIPELINE-001, AP-FEEDBACK-003 | TC-X-PAGE-02 cursor Context / mutable | U1 / FilterA cursor、U2 / FilterB / 別mode、Queue出入り | cursor再利用、mutable Queueのpage2を読む | Context不一致V。Queue全page同時Snapshotとは主張せず、Commandはcurrent再検査 | Application / pure policy / projection | application integration / unit | [IMPL-03 / #32](https://github.com/abi-yusuke-wada/refriq/issues/32) / [IMPL-05 / #37](https://github.com/abi-yusuke-wada/refriq/issues/37) / [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) / [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) / [IMPL-09 / #34](https://github.com/abi-yusuke-wada/refriq/issues/34) |
-| 全15 Command / CAND-SYSTEM-001 | TC-X-K-01 Actor / kind / semantic集合 | 同operationIdの別Actor / 別kind、同Options集合の並び替え | 各Command boundaryで照合 / 正規化 | 別Actor結果を漏らさずkindも区別。集合順のみ同意味、順序が意味を持つContentは変更扱い | Application / pure policy / projection | application integration / unit | [IMPL-01 / #29](https://github.com/abi-yusuke-wada/refriq/issues/29) / [IMPL-10 / #30](https://github.com/abi-yusuke-wada/refriq/issues/30) |
+| 全15 Command / CAND-SYSTEM-001 | TC-X-K-01 Actor / kind / semantic集合・初回同時実行 | 同operationIdの別Actor / 別kind、同Options集合の並び替え。既存の確定結果がない同一Actor / kind / operationId / semantic inputの2要求も用意 | 各Command boundaryで照合 / 正規化。両lookupが未確定を観測した後に同操作の初回確定を並行させる | 別Actor結果を漏らさずkindも区別。集合順のみ同意味、順序が意味を持つContentは変更扱い。同操作のcommitted result identityは最大1で、応答喪失時の照合も含め両要求は同じidentityへ解決する。logical fakeで順序を制御し、物理的同時確定の証明は後続#12 / Adapterへ委譲 | Application / pure policy / projection | application integration / unit | [IMPL-01 / #29](https://github.com/abi-yusuke-wada/refriq/issues/29) / [IMPL-10 / #30](https://github.com/abi-yusuke-wada/refriq/issues/30) |
 | 全15 Command / CAND-SYSTEM-001 | TC-X-K-02 証拠の無自動TTL | 成功証拠あり、時計進行・Use Case instance再生成、同logical stateを保持 | same-operationを再照合 | 同committed結果、期限経過で新操作にしない。fake modelは物理持続性を証明しない | Application / pure policy / projection | application integration / unit | [IMPL-01 / #29](https://github.com/abi-yusuke-wada/refriq/issues/29) / [IMPL-10 / #30](https://github.com/abi-yusuke-wada/refriq/issues/30) |
-| Formal36 / Internal7 | TC-X-ADAPTER-01 real Adapterの保証確認 | #12再レビュー後のAdapter、各AP current / R / Atomicity / K前提 | 同Scenarioをreal boundaryで実行 | 実永続 / 同時確定 / current / 復元 / 結果不明の証拠を別途取得、fake PASSを流用しない | 後続real Adapter | adapter contract（後続） | 各担当Issueの後続Adapter / #12再レビュー |
+| Formal36 | TC-X-ADAPTER-01 real Adapterの保証確認 | #12再レビュー後のAdapter、各AP current / R / Atomicity / K前提 | 同Scenarioをreal boundaryで実行 | 実永続 / 同時確定 / current / 復元 / 結果不明の証拠を別途取得、fake PASSを流用しない | 後続real Adapter | adapter contract（後続） | 各担当Issueの後続Adapter / #12再レビュー |
 | Formal36の利用者flow | TC-X-E2E-01 後続API / UI統合 | Application契約が成立、後続HTTP / UIあり | Learner / Reviewer / Pipeline / Feedbackのflowを実行 | API serializationでもprojection / owner / ack / retry境界を保つ。Endpoint数をAP数へ固定しない | 後続HTTP / UI | e2e（後続） | #13 / #17 / #18 / #19（Scope整合後） |
 
-### 承認済みRV-01〜RV-04の追加Scenario
+### 承認済みRV-01〜RV-04の追加シナリオ
 
 4件のEvaluation mismatch / missing × 負のDecisionを独立行で追跡する。各行はReview対象自体の一致と共通Human条件を前提とする。RV02-05はmatching REVISE / REJECTをDecision別にパラメータ化し、matching PASSの既存基本Scenarioを複製しない。以下も未実装のTest設計であり実行PASSではない。
 
-| AP / Guarantee | Scenario | Given | When | Then | Layer | Test Type | Issue |
+| AP / 内部保証 | シナリオ | 前提 | 操作 | 期待結果 | 検証層 | 検証種別 | 担当Issue |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | AP-REVIEW-004 / AP-REVIEW-005 / AP-REVIEW-008 | RV01-01 Review対象未確認は全Decision不可 | 有効Human Context・operationId等の共通入力。Candidateのみ、または確認対象Revision参照が正本と不一致。Evaluationのmatching PASS表示だけあり | 3 Decisionをパラメータ化して要求 | 全Decision拒否。Human Record / Lifecycle / 公開参照を変更せずCandidateへ記録しない。Evaluation不一致だけを許容するRV02群と区別 | Application / Port | contract / application integration | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) |
 | AP-REVIEW-008 | RV02-01 Evaluation mismatch × REQUEST_CHANGES | materialized exact QuestionRevision、Lifecycle = REVIEW_REQUIRED、既存definitive Human Recordなし、Human Context有効、expected state / version・concurrency成立、旧Published qr0。Evaluation = mismatch（Review対象自体は一致） | REQUEST_CHANGESをexact Revisionへ確定 | 成功。exact RevisionにREQUEST_CHANGES Human RecordとCHANGES_REQUESTEDを一貫確定、definitive decision最大1、旧Published qr0維持、Candidate記録なし。APPROVE用Evaluation Gateを要求しない | Application / Port | contract / application integration | [IMPL-06 / #36](https://github.com/abi-yusuke-wada/refriq/issues/36) |
@@ -160,11 +160,11 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 | AP-PIPELINE-001 | RV04-02 FAILED / retryable=false | Stage.status=FAILED、current Failure.retryable=false、FAILED対象Filter一致 | 待ちStage一覧を取得 | 一覧に含む。retryable=falseだけで除外しない。一覧存在 != Retry許可。修正 / 明示Retry条件は既存AP-PIPELINE-005で別確認 | Application / Port | contract / application integration | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) |
 | AP-PIPELINE-001 | RV04-03 待ち順序 / cursor | RV04-01 / 02を含みwaitingSince同時刻・別Run / Stage、Filter不一致行と短い取得単位あり | Filter後limitとcursorで一覧を継続 | waitingSince asc + pipelineRunId + Stage契約順でstable tie-break。dueAtへ置換しない。Filter後件数、短page continuation、Context bindingを維持。自動durable recoveryを要求しない | Application / Port | contract / application integration | [IMPL-08 / #33](https://github.com/abi-yusuke-wada/refriq/issues/33) |
 
-## 7. AP → Scenario / Issueの全件Coverage
+## 7. APとシナリオ・担当Issueの全件対応
 
 第3〜6節の定義を基にprimary / Kと全横断Scenarioを対応させる。共通Kは全15 Command、後続Adapter / e2eはFormal全件へ展開する。参照は実行済みCoverageを意味せず、TC-X-P-03は後続process integrationのみで検証する。
 
-| AP | Q/C | 主担当Issue | Scenario参照 |
+| AP | Q/C | 主担当Issue | シナリオ参照 |
 | --- | --- | --- | --- |
 | AP-CATALOG-001 | Q | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) | TC-AP-CATALOG-001、TC-X-ADAPTER-01、TC-X-E2E-01 |
 | AP-CATALOG-002 | Q | [IMPL-02 / #31](https://github.com/abi-yusuke-wada/refriq/issues/31) | TC-AP-CATALOG-002、TC-X-ADAPTER-01、TC-X-E2E-01 |
@@ -215,9 +215,9 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 
 共通Pagination TC-X-PAGE-01 / 02はAP-LEARNING-001 / AP-REVIEW-001 / AP-LEARNING-014 / AP-PIPELINE-001 / AP-FEEDBACK-003すべてへ適用する。TC-X-K-01 / 02とTC-IG-CAND-SYSTEM-001は全15 Commandへ適用する。real Adapterとe2eの行はFormal全件に横断して対応し、個別Test実装の着手は後続で行う。
 
-## 8. Failure / Regressionの照合
+## 8. 失敗・回帰条件の照合
 
-| Contract | 主なScenario | 失敗時に禁止する推測 |
+| 契約 | 主なシナリオ | 失敗時に禁止する推測 |
 | --- | --- | --- |
 | Not Found / owner | TC-X-L-08、各exact detail | 別Currentへのfallback、他人のID / 本文の漏出 |
 | Invalid State / 未準備 | TC-AP-LEARNING-007、TC-AP-PIPELINE-005、各Command | 未提出Mock score、Artifact不完全成功、読取失敗後再保存 |
@@ -230,11 +230,11 @@ Use Caseとfakeで同一の業務判定関数を共有して証明を循環さ�
 | Feedback privacy / aggregation | TC-X-F-02 / 03、TC-AP-FEEDBACK-002 | 多数再提出の重み増加、古いTopic寄与再選定、Reviewer identity |
 | Pipeline crash / stale | TC-X-P-01 / 02 / 03 | 自動回復欠如をMVP失敗、成功前段再生成、旧Attempt上書き |
 
-### Reviewer Decisionの期待値（RV-01 / RV-02）
+### Reviewerの判断期待値（RV-01 / RV-02）
 
 共通前提はmaterialized exact QuestionRevision、Lifecycle REVIEW_REQUIRED、未判断、有効Human Context、expected state / concurrency成立。Review対象未確認はRV01-01で全Decision不可。Source blocker N-01の負のDecision許可は既存TC-X-R-03を維持する。
 
-| Evaluation | APPROVE | REQUEST_CHANGES | REJECT | Test Scenario |
+| Evaluation | APPROVE | REQUEST_CHANGES | REJECT | 検証シナリオ |
 | --- | --- | --- | --- | --- |
 | matching PASS / eligible | 既存Source / Provenance / Publish条件も充足時のみ可 | 共通条件下で可 | 共通条件下で可 | TC-AP-REVIEW-004 / 005 / 008 |
 | matching REVISE | 不可 | 共通条件下で可 | 共通条件下で可 | RV02-05 |
